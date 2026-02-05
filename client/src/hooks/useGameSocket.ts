@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { GameState } from '../types';
 
-// Define the server URL - in a real app this would be an env var
-const SERVER_URL = 'http://localhost:3000';
+// Define the server URL - use environment variable or fallback to localhost
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
 export function useGameSocket() {
     const [socket, setSocket] = useState<Socket | null>(null);

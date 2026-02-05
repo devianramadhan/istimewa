@@ -14,7 +14,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow all for dev, restrict in prod
+        origin: process.env.CORS_ORIGIN || "*", // Use env var in production
         methods: ["GET", "POST"]
     }
 });
