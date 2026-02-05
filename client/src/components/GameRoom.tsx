@@ -290,13 +290,16 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 )}
 
                 {gameState.status === 'preparing' && !currentPlayer.isReady && (
-                    <div className="flex gap-4">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
                         <button
                             onClick={onSetReady}
-                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-lg font-bold shadow-lg transition"
+                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold shadow-2xl text-xl animate-bounce border-4 border-green-400"
                         >
                             SIAP MAIN
                         </button>
+                        <div className="text-center text-xs text-white mt-2 bg-black/50 px-2 py-1 rounded">
+                            Klik setelah selesai tukar kartu
+                        </div>
                     </div>
                 )}
 
