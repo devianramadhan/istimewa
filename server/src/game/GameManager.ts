@@ -261,18 +261,32 @@ export class GameManager {
 
         if (player.hand.length <= 1) return true; // Nothing to sort
 
-        // Sort by Rank Value
+        // Helper for Sort Value (Power-based sorting)
+        // 3 is weakest -> 14 (Ace)
+        // 2 is Special (High) -> 15
+        // 10 is Burn (High) -> 16
+        // Joker is Highest -> 17
+        // 7 is weird, but let's keep it at 7 face value for now? Or High? 
+        // Usually 7 is played defensively or strategically. Let's keep it numeric.
+        const getSortValue = (rank: Rank): number => {
+            if (rank === '2') return 15;
+            if (rank === '10') return 16;
+            if (rank === 'joker') return 17;
+            return getCardValue(rank); // 3-14 for others
+        };
+
+        // Sort by Rank Value (Weakest to Strongest)
         player.hand.sort((a, b) => {
-            const valA = getCardValue(a.rank);
-            const valB = getCardValue(b.rank);
+            const valA = getSortValue(a.rank);
+            const valB = getSortValue(b.rank);
             if (valA === valB) {
-                // Determine equality - maybe suit? suit order: clubs, diamonds, hearts, spades?
-                // alphabetic suit for stability: clubs, diamonds, hearts, joker, spades
                 return a.suit.localeCompare(b.suit);
             }
             return valA - valB;
         });
 
+        // Trigger update to reflect sorting
+        // Note: index.ts emits, but here we just return true.
         return true;
     }
 
