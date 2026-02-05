@@ -29,4 +29,5 @@ export interface GameState {
     status: GameStatus;
     winner: string | null;
     message?: string;
+    version: number;
 }

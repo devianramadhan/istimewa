@@ -30,4 +30,5 @@ export interface GameState {
     status: GameStatus;
     winner: string | null;
     message?: string; // For game events (e.g. "Player played 7, next must play lower")
+    version: number; // Increment on every update to force valid sync
 }

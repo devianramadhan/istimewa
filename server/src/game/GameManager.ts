@@ -14,7 +14,8 @@ export class GameManager {
             direction: 1,
             status: 'waiting',
             winner: null,
-            message: 'Waiting for players...'
+            message: 'Waiting for players...',
+            version: 0
         };
         this.games.set(roomId, newGame);
         return newGame;
@@ -284,6 +285,9 @@ export class GameManager {
             }
             return valA - valB;
         });
+
+        // Increment version to force UI update
+        game.version = (game.version || 0) + 1;
 
         // Trigger update to reflect sorting
         // Note: index.ts emits, but here we just return true.

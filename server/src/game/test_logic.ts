@@ -17,7 +17,8 @@ const mockGame: GameState = {
     direction: 1,
     status: 'playing',
     winner: null,
-    message: ''
+    message: '',
+    version: 0
 };
 
 // Mock Player with Special Cards (10, Joker)
