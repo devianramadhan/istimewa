@@ -199,6 +199,19 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     <div key={opp.id} className={`flex flex-col items-center p-4 rounded-xl transition border border-transparent ${gameState.players[gameState.currentPlayerIndex]?.id === opp.id ? 'bg-slate-800/60 border-yellow-500/50' : ''}`}>
                         <div className="text-white font-medium mb-2">{opp.name} {opp.isReady && gameState.status === 'preparing' ? '✅' : ''}</div>
 
+                        {/* Opponent Hand (Hidden) */}
+                        {opp.hand.length > 0 && (
+                            <div className="flex space-x-1 mb-3">
+                                {opp.hand.map((_, i) => (
+                                    <Card
+                                        key={`hand-${i}`}
+                                        isHidden={true}
+                                        className="w-10 h-14 scale-75 shadow-md border border-slate-600 !cursor-default !hover:translate-y-0"
+                                    />
+                                ))}
+                            </div>
+                        )}
+
                         <div className="relative h-20 w-24 flex items-center justify-center mb-2">
                             {/* Face Down Layer */}
                             <div className="absolute flex space-x-1 transform translate-y-1">
