@@ -731,14 +731,14 @@ export class GameManager {
                 }
 
                 // After Action, trigger update via callback
-                this.triggerUpdate(roomId);
+                this.triggerUpdate(game.id);
 
             } catch (err) {
                 console.error(`[Bot] CRASH in turn logic:`, err);
                 // Safety net: Try to advance turn to unblock game
                 try {
                     this.advanceTurn(game);
-                    this.triggerUpdate(roomId);
+                    this.triggerUpdate(game.id);
                 } catch (e) {
                     console.error(`[Bot] Failed safety net advance:`, e);
                 }
