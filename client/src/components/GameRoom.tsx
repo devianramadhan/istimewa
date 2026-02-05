@@ -347,8 +347,31 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     {/* C. My Hand Cards (Footer) */}
                     <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 pb-4 pt-2 md:pt-4 md:pb-6 px-2 md:px-8">
                         <div className="text-[10px] md:text-xs text-slate-400 mb-1 text-center uppercase tracking-wide">Kartu Tangan</div>
-                        <div className="flex justify-center w-full px-4">
-                            <div className="flex -space-x-3 md:-space-x-1 hover:space-x-0 md:hover:space-x-2 transition-all duration-300 py-2 overflow-x-visible items-end min-h-[90px] md:min-h-[140px] max-w-full flex-wrap justify-center md:flex-nowrap">
+                        {/* Player Hand / Action Area */}
+                        <div className="flex flex-col items-center w-full px-4 mb-4">
+
+                            {/* Action Buttons (Sort, etc) */}
+                            {gameState.status === 'playing' && isMyTurn && currentPlayer.hand.length > 2 && (
+                                <div className="mb-2 z-10">
+                                    <button
+                                        onClick={() => actions.sortHand(gameState.id)}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1"
+                                    >
+                                        <span>🔃</span> Urutkan
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Hand Container - Stacked Look */}
+                            <div className={`
+                                flex justify-center items-end py-4 pl-8
+                                w-full max-w-5xl overflow-x-auto overflow-y-visible
+                                scrollbar-hide
+                                ${currentPlayer.hand.length > 8 ? '-space-x-8 md:-space-x-10 lg:-space-x-12' : '-space-x-4 md:-space-x-4'}
+                                hover:space-x-0 md:hover:space-x-2 
+                                transition-all duration-300 ease-out
+                                min-h-[120px] md:min-h-[160px]
+                            `}>
                                 {currentPlayer.hand.map((c, i) => {
                                     const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
                                     const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
@@ -356,11 +379,17 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                                     return (
                                         <div key={`my-hand-${i}`} draggable={isDraggable} onDragStart={(e) => handleDragStart(e, i, 'hand')}
-                                            className={`relative transform transition-all flex-shrink-0 ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-8 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:z-30'}`}
+                                            className={`
+                                                relative transform transition-all duration-300 flex-shrink-0 
+                                                ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} 
+                                                ${isSelected || preparingSelected ? '-translate-y-8 z-50 scale-110' : 'hover:-translate-y-6 hover:z-40 hover:scale-105'}
+                                                ${isSelected ? 'z-50' : 'z-' + (10 + i)} 
+                                            `}
                                             onClick={() => {
                                                 if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
                                                 else if (gameState.status === 'playing' && isMyTurn) handleCardClick(i, 'hand');
                                             }}
+                                            style={{ zIndex: isSelected ? 50 : 10 + i }} // Ensure correct stacking order
                                         >
                                             {/* Swap Button */}
                                             {preparingSelected && selectedFaceUpIndex !== null && (
@@ -368,7 +397,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                                     Tukar
                                                 </button>
                                             )}
-                                            <Card card={c} className={`shadow-2xl transition-all duration-200 w-14 h-20 sm:w-16 sm:h-24 md:w-24 md:h-36 text-xs sm:text-sm md:text-base ${isSelected || preparingSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg' : ''}`} />
+                                            <Card card={c} className={`shadow-xl rounded-lg w-20 h-28 sm:w-24 sm:h-36 md:w-28 md:h-40 text-sm sm:text-base md:text-lg border border-slate-300/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
                                         </div>
                                     );
                                 })}
