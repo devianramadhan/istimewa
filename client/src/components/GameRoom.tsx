@@ -382,7 +382,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
 
                                     return (
-                                        <div key={`my-hand-${i}`} draggable={isDraggable} onDragStart={(e) => handleDragStart(e, i, 'hand')}
+                                        <div key={`my-hand-${c.suit}-${c.rank}-${i}`} draggable={isDraggable} onDragStart={(e) => handleDragStart(e, i, 'hand')}
                                             className={`
                                                 relative transform transition-all duration-300 flex-shrink-0 
                                                 ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} 
