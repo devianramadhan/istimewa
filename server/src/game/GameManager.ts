@@ -262,18 +262,13 @@ export class GameManager {
 
         if (player.hand.length <= 1) return true; // Nothing to sort
 
-        // Helper for Sort Value (Power-based sorting)
-        // 3 is weakest -> 14 (Ace)
-        // 2 is Special (High) -> 15
-        // 10 is Burn (High) -> 16
-        // Joker is Highest -> 17
-        // 7 is weird, but let's keep it at 7 face value for now? Or High? 
-        // Usually 7 is played defensively or strategically. Let's keep it numeric.
+        // Helper for Sort Value (Visual Order: 2 -> A -> Joker)
+        // User requested: "Smallest to Largest from Left to Right"
+        // This implies 2 is "Small" (numeric), even if it's a power card.
+        const rankOrder: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', 'joker'];
+
         const getSortValue = (rank: Rank): number => {
-            if (rank === '2') return 15;
-            if (rank === '10') return 16;
-            if (rank === 'joker') return 17;
-            return getCardValue(rank); // 3-14 for others
+            return rankOrder.indexOf(rank);
         };
 
         // Sort by Rank Value (Weakest to Strongest)
