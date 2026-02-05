@@ -27,7 +27,8 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
     };
 
     return (
-        <div className="flex items-center justify-center gap-12 p-8 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+    return (
+        <div className="flex items-center justify-center gap-6 md:gap-12 p-4 md:p-8 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm transition-all">
             {/* Deck */}
             <div className="flex flex-col items-center gap-2">
                 <div className="relative">
@@ -35,19 +36,19 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
                         <Card
                             isHidden={true}
                             onClick={() => isCurrentPlayer && onDrawCard()}
-                            className={isCurrentPlayer ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900" : ""}
+                            className={isCurrentPlayer ? "ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-900 w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 transition-all" : "w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 transition-all"}
                         />
                     ) : (
-                        <div className="w-20 h-28 border-2 border-slate-700 border-dashed rounded-lg flex items-center justify-center text-slate-600 text-xs">
+                        <div className="w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 border-2 border-slate-700 border-dashed rounded-lg flex items-center justify-center text-slate-600 text-[10px] md:text-xs lg:text-sm transition-all">
                             Kosong
                         </div>
                     )}
                     {/* Stack effect */}
                     {deckCount > 1 && (
-                        <div className="absolute top-1 left-1 w-20 h-28 bg-slate-700 rounded-lg border border-slate-600 -z-10"></div>
+                        <div className="absolute top-1 left-1 w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 bg-slate-700 rounded-lg border border-slate-600 -z-10 transition-all"></div>
                     )}
                 </div>
-                <span className="text-slate-400 text-sm font-medium">Deck ({deckCount})</span>
+                <span className="text-slate-400 text-xs md:text-sm font-medium">Deck ({deckCount})</span>
             </div>
 
             {/* Discard Pile */}
@@ -59,9 +60,9 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
                     onClick={() => discardPile.length > 0 && onDiscardPileClick && onDiscardPileClick()}
                 >
                     {topCard ? (
-                        <Card card={topCard} className={isCurrentPlayer ? "ring-2 ring-yellow-500/50" : ""} />
+                        <Card card={topCard} className={`w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 transition-all ${isCurrentPlayer ? "ring-2 ring-yellow-500/50" : ""}`} />
                     ) : (
-                        <div className={`w-20 h-28 border-2 ${isCurrentPlayer ? 'border-yellow-400 bg-yellow-400/10' : 'border-slate-600'} border-dashed rounded-lg flex items-center justify-center text-slate-500 text-xs transition-colors`}>
+                        <div className={`w-14 h-20 md:w-20 md:h-28 lg:w-24 lg:h-36 border-2 ${isCurrentPlayer ? 'border-yellow-400 bg-yellow-400/10' : 'border-slate-600'} border-dashed rounded-lg flex items-center justify-center text-slate-500 text-[10px] md:text-xs lg:text-sm transition-colors`}>
                             {isCurrentPlayer ? 'Drop here' : 'Discard'}
                         </div>
                     )}
@@ -70,8 +71,9 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
                         <div className="absolute inset-0 z-20 rounded-lg border-2 border-transparent hover:border-yellow-400 pointer-events-none transition-colors" />
                     )}
                 </div>
-                <span className="text-slate-400 text-sm font-medium">Buangan ({discardPile.length})</span>
+                <span className="text-slate-400 text-xs md:text-sm font-medium">Buangan ({discardPile.length})</span>
             </div>
         </div>
+    );
     );
 };
