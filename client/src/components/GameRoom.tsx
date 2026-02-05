@@ -408,10 +408,10 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     </div>
                 </div>
 
-                {/* My Hand */}
-                <div className="flex flex-col items-center bg-black/20 p-4 rounded-2xl backdrop-blur-sm border border-white/10 w-full max-w-4xl">
-                    <div className="text-xs text-slate-400 mb-2 uppercase tracking-wide">Kartu Tangan</div>
-                    <div className="flex space-x-2 hover:space-x-3 transition-all duration-300 px-8 py-2">
+                {/* My Hand - Responsive Fixed Bottom */}
+                <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
+                    <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
+                    <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
                         {currentPlayer.hand.map((c, i) => {
                             const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
                             const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
@@ -422,11 +422,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     key={`my-hand-${i}`}
                                     draggable={isDraggable}
                                     onDragStart={(e) => handleDragStart(e, i, 'hand')}
-                                    // Add opacity when dragging (native DnD handles ghost, but source stays visible)
-                                    // We can use transform to indicate interaction
-                                    className={`relative transform transition-all 
-                                        ${isDraggable ? 'cursor-grab active:cursor-grabbing hover:-translate-y-2' : 'hover:-translate-y-6 hover:scale-110 hover:z-50'}
-                                        ${isSelected || preparingSelected ? 'ring-4 ring-purple-500 rounded-lg -translate-y-6 z-40' : ''}
+                                    className={`relative transform transition-all flex-shrink-0
+                                        ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}
+                                        ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-6 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:z-30'}
                                     `}
                                     onClick={() => {
                                         if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
@@ -435,20 +433,26 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                         }
                                     }}
                                 >
-                                    {/* Swap Button Contextual - Only if Clicked, not during drag */}
-
+                                    {/* Swap Button Contextual */}
                                     {preparingSelected && selectedFaceUpIndex !== null && (
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleSwap();
                                             }}
-                                            className="absolute -top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
+                                            className="absolute -top-8 md:-top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
                                         >
-                                            Tukar Kartu
+                                            Tukar
                                         </button>
                                     )}
-                                    <Card card={c} className="w-24 h-36 shadow-2xl" />
+                                    <Card
+                                        card={c}
+                                        className={`shadow-2xl transition-all duration-200
+                                            w-16 h-24 sm:w-20 sm:h-28 md:w-24 md:h-36 
+                                            text-xs sm:text-sm md:text-base
+                                            ${isSelected || preparingSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg' : ''}
+                                        `}
+                                    />
                                 </div>
                             );
                         })}
