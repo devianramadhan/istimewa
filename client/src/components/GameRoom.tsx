@@ -205,23 +205,23 @@ export const GameRoom: React.FC<GameRoomProps> = ({
             <div className="flex-1 flex flex-col relative w-full overflow-hidden">
 
                 {/* 1. Opponents (Top) */}
-                <div className="flex justify-center gap-2 md:gap-8 pt-2 md:pt-4 px-2 shrink-0 h-[120px] md:h-auto items-start z-10">
+                <div className="flex justify-center gap-2 md:gap-8 pt-2 md:pt-4 px-2 shrink-0 items-start z-10 w-full min-h-[150px] md:min-h-0 transition-all duration-300">
                     {opponents.map(opp => (
-                        <div key={opp.id} className={`flex flex-col items-center p-2 rounded-xl transition border border-transparent scale-90 md:scale-100 origin-top gap-3 ${gameState.players[gameState.currentPlayerIndex]?.id === opp.id ? 'bg-slate-800/60 border-yellow-500/50' : ''}`}>
-                            <div className="text-white font-medium text-xs md:text-sm">{opp.name} {opp.isReady && gameState.status === 'preparing' ? '✅' : ''}</div>
+                        <div key={opp.id} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 border border-transparent origin-top gap-2 md:gap-4 ${gameState.players[gameState.currentPlayerIndex]?.id === opp.id ? 'bg-slate-800/60 border-yellow-500/50 scale-105' : ''}`}>
+                            <div className="text-white font-medium text-xs md:text-base lg:text-lg mb-1">{opp.name} {opp.isReady && gameState.status === 'preparing' ? '✅' : ''}</div>
 
                             {/* Opponent Hand Count */}
                             {opp.hand.length > 0 && (
-                                <div className="flex -space-x-3 justify-center h-10 items-end z-20">
+                                <div className="flex -space-x-3 md:-space-x-4 justify-center h-10 md:h-14 items-end z-20">
                                     {opp.hand.map((_, i) => (
                                         <Card
                                             key={`h-opp-${i}`}
                                             isHidden={true}
-                                            className="w-6 h-9 md:w-8 md:h-12 border border-slate-600 shadow-sm"
+                                            className="w-8 h-12 md:w-12 md:h-16 lg:w-14 lg:h-20 border border-slate-600 shadow-sm transition-all"
                                         />
                                     )).slice(0, 5)}
                                     {opp.hand.length > 5 && (
-                                        <div className="text-[10px] pl-2 self-center font-bold text-slate-400">
+                                        <div className="text-[10px] md:text-xs pl-2 self-center font-bold text-slate-400">
                                             +{opp.hand.length - 5}
                                         </div>
                                     )}
@@ -229,17 +229,17 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             )}
 
                             {/* Opponent Face Cards */}
-                            <div className="relative h-20 w-24 flex items-center justify-center pt-2 z-10">
+                            <div className="relative h-20 w-24 md:h-28 md:w-32 lg:h-32 lg:w-40 flex items-center justify-center pt-2 z-10">
                                 {/* Face Down Layer */}
-                                <div className="absolute flex space-x-1 transform translate-y-3 z-0">
+                                <div className="absolute flex space-x-1 md:space-x-2 transform translate-y-3 md:translate-y-4 z-0">
                                     {opp.faceDownCards.map((_, i) => (
-                                        <Card key={`fd-${i}`} isHidden={true} className="w-8 h-12 md:w-10 md:h-14 shadow-md border border-slate-600 !cursor-default" />
+                                        <Card key={`fd-${i}`} isHidden={true} className="w-10 h-14 md:w-14 md:h-20 lg:w-16 lg:h-24 shadow-md border border-slate-600 !cursor-default transition-all" />
                                     ))}
                                 </div>
                                 {/* Face Up Layer */}
-                                <div className="absolute flex space-x-1 z-10 transform -translate-y-1">
+                                <div className="absolute flex space-x-1 md:space-x-2 z-10 transform -translate-y-1 md:-translate-y-2">
                                     {opp.faceUpCards.map((c, i) => (
-                                        <Card key={`fu-${i}`} card={c} className="w-8 h-12 md:w-10 md:h-14 shadow-lg !cursor-default" />
+                                        <Card key={`fu-${i}`} card={c} className="w-10 h-14 md:w-14 md:h-20 lg:w-16 lg:h-24 shadow-lg !cursor-default transition-all" />
                                     ))}
                                 </div>
                             </div>
