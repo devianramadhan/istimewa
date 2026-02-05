@@ -481,6 +481,11 @@ export class GameManager {
             this.advanceTurn(game);
         } else {
             console.log(`[GameManager] Skipping turn advance - same player continues`);
+            // If same player continues and it's a bot, trigger bot turn
+            if (currentPlayer.isBot) {
+                console.log(`[GameManager] Same player is bot, triggering bot turn...`);
+                this.processBotTurn(game, currentPlayer.id);
+            }
         }
 
         // Trigger update for Bot moves (async side effects)
