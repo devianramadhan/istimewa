@@ -410,92 +410,93 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         </div>
                     </div>
                 </div>
-            </div>- Responsive Fixed Bottom */}
-            <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
-                <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
-                <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
-                    {currentPlayer.hand.map((c, i) => {
-                        const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
-                        const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
-                        const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
 
-                        return (
-                            <div
-                                key={`my-hand-${i}`}
-                                draggable={isDraggable}
-                                onDragStart={(e) => handleDragStart(e, i, 'hand')}
-                                className={`relative transform transition-all flex-shrink-0
+                {/* My Hand - Responsive Fixed Bottom */}
+                <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
+                    <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
+                    <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
+                        {currentPlayer.hand.map((c, i) => {
+                            const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
+                            const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
+                            const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
+
+                            return (
+                                <div
+                                    key={`my-hand-${i}`}
+                                    draggable={isDraggable}
+                                    onDragStart={(e) => handleDragStart(e, i, 'hand')}
+                                    className={`relative transform transition-all flex-shrink-0
                                         ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}
                                         ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-6 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:z-30'}
                                     `}
-                                onClick={() => {
-                                    if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
-                                    else if (gameState.status === 'playing' && isMyTurn) {
-                                        handleCardClick(i, 'hand');
-                                    }
-                                }}
-                            >
-                                {/* Swap Button Contextual */}
-                                {preparingSelected && selectedFaceUpIndex !== null && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSwap();
-                                        }}
-                                        className="absolute -top-8 md:-top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
-                                    >
-                                        Tukar
-                                    </button>
-                                )}
-                                <Card
-                                    card={c}
-                                    className={`shadow-2xl transition-all duration-200
+                                    onClick={() => {
+                                        if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
+                                        else if (gameState.status === 'playing' && isMyTurn) {
+                                            handleCardClick(i, 'hand');
+                                        }
+                                    }}
+                                >
+                                    {/* Swap Button Contextual */}
+                                    {preparingSelected && selectedFaceUpIndex !== null && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleSwap();
+                                            }}
+                                            className="absolute -top-8 md:-top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
+                                        >
+                                            Tukar
+                                        </button>
+                                    )}
+                                    <Card
+                                        card={c}
+                                        className={`shadow-2xl transition-all duration-200
                                             w-16 h-24 sm:w-20 sm:h-28 md:w-24 md:h-36 
                                             text-xs sm:text-sm md:text-base
                                             ${isSelected || preparingSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg' : ''}
                                         `}
-                                />
-                            </div>
-                        );
-                    })}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
-        </div>
 
-            {/* Discard Pile Viewer Modal */ }
-    {
-        showDiscardPile && gameState.discardPile.length > 0 && (
-            <div
-                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8 animate-fade-in"
-                onClick={() => setShowDiscardPile(false)}
-            >
-                <div className="bg-slate-800/95 rounded-2xl p-8 max-w-6xl max-h-[80vh] overflow-auto border-2 border-slate-600 backdrop-blur-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-2xl font-bold text-white">Kartu Buangan ({gameState.discardPile.length})</h3>
-                        <button
-                            onClick={() => setShowDiscardPile(false)}
-                            className="text-slate-400 hover:text-white text-3xl leading-none"
-                        >
-                            ×
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap gap-3 justify-center">
-                        {gameState.discardPile.map((card, i) => (
-                            <div
-                                key={`discard-${i}`}
-                                className="transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
-                                style={{
-                                    animation: `slideIn 0.3s ease-out ${i * 0.05}s both`
-                                }}
-                            >
-                                <Card card={card} className="w-20 h-28 shadow-xl" />
+            {/* Discard Pile Viewer Modal */}
+            {
+                showDiscardPile && gameState.discardPile.length > 0 && (
+                    <div
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8 animate-fade-in"
+                        onClick={() => setShowDiscardPile(false)}
+                    >
+                        <div className="bg-slate-800/95 rounded-2xl p-8 max-w-6xl max-h-[80vh] overflow-auto border-2 border-slate-600 backdrop-blur-sm">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-2xl font-bold text-white">Kartu Buangan ({gameState.discardPile.length})</h3>
+                                <button
+                                    onClick={() => setShowDiscardPile(false)}
+                                    className="text-slate-400 hover:text-white text-3xl leading-none"
+                                >
+                                    ×
+                                </button>
                             </div>
-                        ))}
+                            <div className="flex flex-wrap gap-3 justify-center">
+                                {gameState.discardPile.map((card, i) => (
+                                    <div
+                                        key={`discard-${i}`}
+                                        className="transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
+                                        style={{
+                                            animation: `slideIn 0.3s ease-out ${i * 0.05}s both`
+                                        }}
+                                    >
+                                        <Card card={card} className="w-20 h-28 shadow-xl" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
 
         </div >
     );
