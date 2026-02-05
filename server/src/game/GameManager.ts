@@ -562,12 +562,15 @@ export class GameManager {
             const bot = game.players.find(p => p.id === botId);
             if (!bot) return;
 
+            console.log(`[Bot] ${bot.name} is taking turn...`);
+
             // Bot Logic:
             // 1. Find all valid cards from current source (Hand -> FaceUp -> FaceDown)
             // 2. Randomly pick one valid card to play
             // 3. If no valid cards, take pile
 
             const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
+            console.log(`[Bot] Top card:`, topCard ? `${topCard.rank}${topCard.suit}` : 'null (empty pile)');
 
             let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
             let candidateIndices: number[] = [];
@@ -577,6 +580,8 @@ export class GameManager {
             else if (bot.faceUpCards.length > 0) source = 'faceUp';
             else source = 'faceDown';
 
+            console.log(`[Bot] Source: ${source}, Cards in source: ${source === 'hand' ? bot.hand.length : source === 'faceUp' ? bot.faceUpCards.length : bot.faceDownCards.length}`);
+
             // Find valid moves
             const cardList = source === 'hand' ? bot.hand : (source === 'faceUp' ? bot.faceUpCards : bot.faceDownCards);
 
@@ -585,34 +590,45 @@ export class GameManager {
                 if (cardList.length > 0) {
                     const randomIndex = Math.floor(Math.random() * cardList.length);
                     candidateIndices = [randomIndex];
+                    console.log(`[Bot] Blind play - selected index ${randomIndex}`);
                 }
             } else {
                 // Find ALL valid cards
                 const validIndices: number[] = [];
                 for (let i = 0; i < cardList.length; i++) {
                     const card = cardList[i];
-                    if (this.isValidMove(card, topCard)) {
+                    const isValid = this.isValidMove(card, topCard);
+                    console.log(`[Bot] Checking card ${i}: ${card.rank}${card.suit} - Valid: ${isValid}`);
+                    if (isValid) {
                         validIndices.push(i);
                     }
                 }
+
+                console.log(`[Bot] Valid indices: [${validIndices.join(', ')}]`);
 
                 // Randomly pick one valid card
                 if (validIndices.length > 0) {
                     const randomChoice = validIndices[Math.floor(Math.random() * validIndices.length)];
                     candidateIndices = [randomChoice];
+                    console.log(`[Bot] Selected index ${randomChoice} from valid cards`);
                 }
             }
 
             if (candidateIndices.length > 0) {
                 // Try Play
+                console.log(`[Bot] Attempting to play card at index ${candidateIndices[0]} from ${source}`);
                 const success = this.playCard(game.id, bot.id, candidateIndices, source);
+                console.log(`[Bot] Play result: ${success ? 'SUCCESS' : 'FAILED'}`);
                 if (!success && source === 'faceDown') {
                     // Failed blind play - take pile
+                    console.log(`[Bot] Failed blind play, taking pile`);
                     this.takePile(game.id, bot.id);
                 }
             } else {
                 // No valid move -> Take Pile
+                console.log(`[Bot] No valid cards found`);
                 if (game.discardPile.length > 0) {
+                    console.log(`[Bot] Taking pile (${game.discardPile.length} cards)`);
                     this.takePile(game.id, bot.id);
                 } else {
                     // Edge case: pile is empty and no valid move
