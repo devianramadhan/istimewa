@@ -290,22 +290,22 @@ export class GameManager {
     }
 
     private dealInitialCards(game: GameState) {
-        // Deal 3 Face Down, 3 Face Up, 3 Hand to each player
-        // Total 9 cards per player
+        // Deal 2 Face Down, 2 Face Up, 2 Hand to each player
+        // Total 6 cards per player
 
         for (const player of game.players) {
-            // 3 Face Down
-            for (let i = 0; i < 3; i++) {
+            // 2 Face Down
+            for (let i = 0; i < 2; i++) {
                 if (game.deck.length > 0) player.faceDownCards.push(game.deck.pop()!);
             }
 
-            // 3 Face Up
-            for (let i = 0; i < 3; i++) {
+            // 2 Face Up
+            for (let i = 0; i < 2; i++) {
                 if (game.deck.length > 0) player.faceUpCards.push(game.deck.pop()!);
             }
 
-            // 3 Hand
-            for (let i = 0; i < 3; i++) {
+            // 2 Hand
+            for (let i = 0; i < 2; i++) {
                 if (game.deck.length > 0) player.hand.push(game.deck.pop()!);
             }
         }
