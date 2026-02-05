@@ -558,9 +558,47 @@ export class GameManager {
 
         // Check if next player is Bot
         const nextPlayer = game.players[nextIndex];
+
+        // Auto-take pile if player has no valid moves
+        if (!nextPlayer.isBot && game.discardPile.length > 0) {
+            const hasValidMove = this.playerHasValidMove(game, nextPlayer);
+            if (!hasValidMove) {
+                console.log(`[GameManager] Player ${nextPlayer.name} has no valid moves, auto-taking pile...`);
+                setTimeout(() => {
+                    this.takePile(game.id, nextPlayer.id);
+                }, 1000); // Small delay for UX
+                return; // Don't trigger bot turn yet
+            }
+        }
+
         if (nextPlayer.isBot) {
             this.processBotTurn(game, nextPlayer.id);
         }
+    }
+
+    // Helper: Check if player has any valid move
+    private playerHasValidMove(game: GameState, player: any): boolean {
+        const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
+        if (!topCard) return true; // Can always play if pile is empty
+
+        // Check hand
+        for (const card of player.hand) {
+            if (this.isValidMove(card, topCard)) return true;
+        }
+
+        // Check face up (only if hand is empty)
+        if (player.hand.length === 0) {
+            for (const card of player.faceUpCards) {
+                if (this.isValidMove(card, topCard)) return true;
+            }
+        }
+
+        // Face down is always playable (blind)
+        if (player.hand.length === 0 && player.faceUpCards.length === 0 && player.faceDownCards.length > 0) {
+            return true;
+        }
+
+        return false;
     }
 
     private processBotTurn(game: GameState, botId: string) {
