@@ -351,11 +351,15 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         <div className="flex flex-col items-center w-full px-4 mb-4">
 
                             {/* Action Buttons (Sort, etc) */}
-                            {gameState.status === 'playing' && isMyTurn && currentPlayer.hand.length > 2 && (
+                            {/* Allow sort anytime as long as we have cards */}
+                            {(gameState.status === 'playing' || gameState.status === 'preparing') && currentPlayer.hand.length > 1 && (
                                 <div className="mb-2 z-10">
                                     <button
-                                        onClick={() => actions.sortHand(gameState.id)}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1"
+                                        onClick={() => {
+                                            console.log("Sort button clicked");
+                                            actions.sortHand(gameState.id);
+                                        }}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1 active:scale-95"
                                     >
                                         <span>🔃</span> Urutkan
                                     </button>
