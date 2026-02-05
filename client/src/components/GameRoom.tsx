@@ -167,101 +167,83 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         }
     };
 
+    // --- HELPER: Position Logic ---
+    const getSeatStyle = (index: number, total: number) => {
+        // Find relative index from current player (Me is always 0 in relative terms)
+        const myIndex = gameState.players.findIndex(p => p.id === playerId);
+        // rotate so myIndex becomes 0
+        const relativeIndex = (index - myIndex + total) % total;
+
+        if (total === 2) {
+            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom)
+            if (relativeIndex === 1) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Top)
+        }
+        if (total === 3) {
+            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 1) return { top: '15%', left: '20%', transform: 'translate(-50%, 0)' };   // Top Left
+            if (relativeIndex === 2) return { top: '15%', right: '20%', transform: 'translate(50%, 0)' };   // Top right
+        }
+        if (total === 4) {
+            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };    // Left
+            if (relativeIndex === 2) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Top
+            if (relativeIndex === 3) return { top: '50%', right: '5%', transform: 'translate(0, -50%)' };   // Right
+        }
+
+        // Fallback for > 4 (Circle)
+        // Me at bottom, others distributed
+        if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+
+        // Distribute remaining roughly around top arc
+        // Simple Top-Left, Top-Center, Top-Right logic or just even spread?
+        // Let's use generic positions for 5-6
+        // This is a rough heuristic
+        const angle = 180 + (180 / (total - 1)) * relativeIndex; // 180 is left, 360 is right?
+        // Let's simplified: 5 players -> Left, TopLeft, TopRight, Right
+        if (total === 5) {
+            if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };   // Left
+            if (relativeIndex === 2) return { top: '10%', left: '25%', transform: 'translate(-50%, 0)' };  // Top Left
+            if (relativeIndex === 3) return { top: '10%', right: '25%', transform: 'translate(50%, 0)' };  // Top Right
+            if (relativeIndex === 4) return { top: '50%', right: '5%', transform: 'translate(0, -50%)' };  // Right
+        }
+
+        return { top: '0', left: '0' }; // Fallback
+    };
+
     return (
-        <div className="flex flex-col h-screen w-full relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black text-white selection:bg-purple-500/30">
+        <div className="flex flex-col h-screen w-full relative overflow-hidden bg-slate-900 text-white select-none">
+
+            {/* --- TABLE BACKGROUND (Wood Floor / Carpet) --- */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-800 to-black opacity-80 z-0 pointer-events-none" />
 
             {/* --- HEADER --- */}
-            <div className="w-full p-2 md:p-4 flex flex-col md:flex-row justify-start md:justify-between items-stretch md:items-start gap-2 z-20 shrink-0">
-                <div className="flex flex-row justify-between items-start w-full gap-2">
-                    {/* Room ID */}
-                    <div className="bg-slate-800/90 px-3 py-1.5 md:py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto flex-shrink-0">
-                        <div className="flex flex-row items-center gap-2">
-                            <span className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider">Room:</span>
-                            <div className="text-white font-mono text-xs md:text-lg font-bold max-w-[100px] md:max-w-none truncate">{gameState.id}</div>
-                            <button
-                                onClick={() => navigator.clipboard.writeText(gameState.id)}
-                                className="p-1 hover:bg-white/10 rounded transition text-blue-300"
-                            >
-                                📋
-                            </button>
-                        </div>
-                    </div>
+            <div className="absolute top-0 left-0 right-0 p-4 z-40 flex justify-between items-start pointer-events-auto">
+                {/* Room Info */}
+                <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
+                    <span className="text-xs text-slate-400 uppercase">Room</span>
+                    <span className="font-mono font-bold text-yellow-500">{gameState.id}</span>
+                </div>
 
-                    {/* Status Box */}
-                    <div className="bg-slate-800/90 px-3 py-1.5 md:py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto flex-1 min-w-0 flex flex-col items-end">
-                        <div className={`font-bold text-xs md:text-base leading-tight truncate w-full text-right ${isMyTurn ? 'text-green-400' : 'text-yellow-400'}`}>
-                            {gameState.status === 'preparing' ? 'Persiapan' : isMyTurn ? "GILIRANMU" : `Giliran ${gameState.players[gameState.currentPlayerIndex]?.name}`}
-                        </div>
-                        {gameState.message && (
-                            <div className="text-[10px] md:text-xs text-blue-300 mt-0.5 leading-tight truncate w-full text-right">
-                                {gameState.message}
-                            </div>
-                        )}
+                {/* Game Status */}
+                <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-right">
+                    <div className={`font-bold ${isMyTurn ? 'text-green-400' : 'text-slate-200'}`}>
+                        {gameState.status === 'preparing' ? 'Waiting...' : isMyTurn ? 'YOUR TURN' : `${gameState.players[gameState.currentPlayerIndex]?.name}'s Turn`}
                     </div>
                 </div>
             </div>
 
-            {/* --- MAIN GAME AREA (Flex-1) --- */}
-            <div className="flex-1 flex flex-col relative w-full overflow-hidden">
+            {/* --- POKER TABLE AREA --- */}
+            <div className="relative flex-1 w-full h-full z-10 overflow-hidden">
 
-                {/* 1. Opponents (Top) */}
-                <div className="flex justify-center gap-2 md:gap-8 pt-2 md:pt-4 px-2 shrink-0 items-start z-10 w-full min-h-[150px] md:min-h-0 transition-all duration-300">
-                    {opponents.map(opp => (
-                        <div key={opp.id} className={`flex flex-col items-center p-2 rounded-xl transition-all duration-300 border border-transparent origin-top gap-1 ${gameState.players[gameState.currentPlayerIndex]?.id === opp.id ? 'bg-slate-800/60 border-yellow-500/50 scale-105' : ''}`}>
-                            <div className="text-white font-medium text-xs md:text-sm lg:text-base mb-1 flex items-center gap-2">
-                                {opp.name}
-                                {opp.isReady && gameState.status === 'preparing' ? '✅' : ''}
-                                {opp.hand.length > 0 && (
-                                    <span className="bg-blue-900/80 text-blue-100 text-[10px] md:text-xs px-1.5 py-0.5 rounded border border-blue-500/30 font-bold">
-                                        {opp.hand.length} 🎴
-                                    </span>
-                                )}
-                            </div>
+                {/* THE TABLE (Green Felt) */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] w-[85%] md:w-[70%] h-[50%] md:h-[60%] bg-[#276e36] rounded-[200px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
 
-                            {/* Opponent Face Cards - Adjusted Responsive Sizing */}
-                            <div className="relative h-20 w-24 md:h-24 md:w-32 lg:h-32 lg:w-40 flex items-center justify-center mt-1 z-10">
-                                {/* Face Down Layer */}
-                                <div className="absolute flex space-x-1 md:space-x-2 transform translate-y-3 z-0">
-                                    {opp.faceDownCards.map((_, i) => (
-                                        <Card key={`fd-${i}`} isHidden={true} className="w-8 h-12 md:w-12 md:h-16 lg:w-14 lg:h-20 shadow-md border border-slate-600 !cursor-default transition-all" />
-                                    ))}
-                                </div>
-                                {/* Face Up Layer */}
-                                <div className="absolute flex space-x-1 md:space-x-2 z-10 transform -translate-y-1">
-                                    {opp.faceUpCards.map((c, i) => (
-                                        <Card key={`fu-${i}`} card={c} className="w-8 h-12 md:w-12 md:h-16 lg:w-14 lg:h-20 shadow-lg !cursor-default transition-all" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                    {/* Table Logo / Center Art */}
+                    <div className="absolute text-green-900/30 font-serif font-bold text-4xl md:text-6xl tracking-widest select-none pointer-events-none">
+                        ISTIMEWA
+                    </div>
 
-                {/* 2. Table Center (Deck & Pile) */}
-                <div className="flex-1 flex flex-col items-center justify-center -mt-8 md:mt-0 z-0">
-                    {/* Lobby Waiting UI - Overlay in Center */}
-                    {gameState.status === 'waiting' && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-50 backdrop-blur-sm p-4 text-center">
-                            <div className="text-2xl font-bold text-blue-300 mb-6">Menunggu Pemain Lain...</div>
-                            {gameState.players.every(p => p.isReady) && gameState.players.length > 1 ? (
-                                isHost ? (
-                                    <button onClick={() => actions.startGame(gameState.id)} className="bg-yellow-500 hover:bg-yellow-600 text-black px-10 py-4 rounded-full font-bold shadow-xl text-xl animate-pulse">👑 MULAI GAME</button>
-                                ) : (
-                                    <div className="bg-slate-800/80 px-8 py-3 rounded-full border border-blue-500/30 text-blue-200 animate-pulse">Host sedang menyiapkan permainan...</div>
-                                )
-                            ) : (
-                                <div className="flex gap-4 items-center">
-                                    {!currentPlayer.isReady ? (
-                                        <button onClick={onSetReady} className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-bold shadow-lg text-lg transform transition hover:scale-105">SAYA SIAP!</button>
-                                    ) : (
-                                        <div className="bg-slate-700 text-slate-300 px-8 py-3 rounded-full font-bold shadow-inner">Menunggu... ⏳</div>
-                                    )}
-                                </div>
-                            )}
-                            <div className="mt-4 text-sm text-slate-400">{gameState.players.filter(p => p.isReady).length} / {gameState.players.length} Pemain Siap</div>
-                        </div>
-                    )}
-
+                    {/* Discard Pile & Deck (Center of Table) */}
                     <Table
                         discardPile={gameState.discardPile}
                         deckCount={gameState.deck.length}
@@ -272,172 +254,189 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     />
                 </div>
 
-                {/* 3. Player Bottom Zone (Stacked Flex: Actions -> Face Cards -> Hand) */}
-                <div className="flex flex-col items-center justify-end w-full shrink-0 z-20">
+                {/* PLAYERS (Seats) */}
+                {gameState.players.map((p, i) => {
+                    const isMe = p.id === playerId;
+                    const style = getSeatStyle(i, gameState.players.length);
+                    // If it's Me, we hide the Hand Count badge (since I see my hand)
+                    // But we show Face Cards heavily
 
-                    {/* A. Action Buttons (Floating above cards) */}
-                    <div className="flex gap-4 mb-2 md:mb-4 pointer-events-auto min-h-[40px] items-center">
-                        {/* Play Button */}
-                        {gameState.status === 'playing' && isMyTurn && selectedCardIndices.length > 0 && (
-                            <button onClick={() => handleExecutePlay('hand')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 md:px-8 md:py-2 rounded-full font-bold shadow-lg animate-pulse text-sm md:text-base">
-                                Mainkan {selectedCardIndices.length} Kartu
-                            </button>
-                        )}
+                    return (
+                        <div key={p.id} className="absolute flex flex-col items-center transition-all duration-500 w-[120px] md:w-[200px]" style={style}>
 
-                        {/* Take Pile Button */}
-                        {gameState.status === 'playing' && isMyTurn && gameState.discardPile.length > 0 && (
-                            <button onClick={onTakePile} className="bg-red-900/80 hover:bg-red-800 text-red-100 px-4 py-1.5 rounded-full text-xs md:text-sm border border-red-500/30">
-                                Ambil Kartu
-                            </button>
-                        )}
-
-                        {/* PREPARING: READY BUTTON */}
-                        {gameState.status === 'preparing' && !currentPlayer.isReady && (
-                            <div className="flex flex-col items-center gap-2">
-                                <div className="text-[10px] md:text-xs text-blue-200 bg-black/50 px-2 py-1 rounded animate-bounce">Selesai tukar kartu?</div>
-                                <button onClick={onSetReady} className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 md:px-10 md:py-3 rounded-full font-bold shadow-2xl text-sm md:text-xl border-2 border-green-400">
-                                    SIAP MAIN
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* B. My Face Up/Down Cards */}
-                    <div className="relative h-24 md:h-32 flex items-center justify-center mb-1 md:mb-2 pointer-events-auto">
-                        {/* Face Down Layer */}
-                        <div className="absolute flex space-x-1 md:space-x-2 transform translate-y-2 md:translate-y-4">
-                            {currentPlayer.faceDownCards.map((_, i) => (
-                                <div key={`my-fd-${i}`} draggable={gameState.status === 'playing' && isMyTurn} onDragStart={(e) => handleDragStart(e, i, 'faceDown')}
-                                    onClick={() => gameState.status === 'playing' && isMyTurn ? onPlayCard([i], 'faceDown') : null} className="cursor-pointer transition-transform hover:-translate-y-1">
-                                    <Card isHidden={true} className="w-14 h-20 md:w-20 md:h-28 shadow-lg border-2 border-slate-600" />
-                                </div>
-                            ))}
-                        </div>
-                        {/* Face Up Layer */}
-                        <div className="absolute flex space-x-1 md:space-x-2 z-10 transform -translate-y-2 md:-translate-y-4">
-                            {currentPlayer.faceUpCards.map((c, i) => {
-                                const isSelected = gameState.status === 'playing' && currentPlayer.hand.length === 0 && selectedCardIndices.includes(i);
-                                const canHoverMove = gameState.status !== 'preparing';
-                                return (
-                                    <div key={`my-fu-${i}`} draggable={gameState.status === 'playing' && isMyTurn && currentPlayer.hand.length === 0} onDragStart={(e) => handleDragStart(e, i, 'faceUp')}
-                                        className={`transition-transform duration-200 relative ${canHoverMove ? 'hover:-translate-y-2 cursor-pointer' : ''} ${selectedFaceUpIndex === i || isSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg transform -translate-y-4 scale-105' : ''}`}
-                                        onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, i)}
-                                        onClick={() => {
-                                            if (gameState.status === 'preparing') setSelectedFaceUpIndex(i === selectedFaceUpIndex ? null : i);
-                                            else if (gameState.status === 'playing' && isMyTurn) {
-                                                if (currentPlayer.hand.length > 0) return;
-                                                setSelectedCardIndices(prev => {
-                                                    if (prev.length === 0) return [i];
-                                                    if (prev.includes(i)) return prev.filter(idx => idx !== i);
-                                                    if (currentPlayer.faceUpCards[prev[0]].rank !== c.rank) return [i];
-                                                    return [...prev, i];
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        <Card card={c} className={`w-14 h-20 md:w-20 md:h-28 shadow-xl ${gameState.status === 'preparing' ? 'border-2 border-dashed border-white/50 bg-white/90' : ''}`} />
-                                        {/* Drop Highlight */}
-                                        {gameState.status === 'preparing' && <div className="absolute inset-0 rounded-lg border-2 border-transparent hover:border-yellow-400 hover:bg-yellow-400/20 pointer-events-none" />}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* C. My Hand Cards (Footer) */}
-                    <div className="w-full bg-black/40 backdrop-blur-md border-t border-white/10 pb-4 pt-2 md:pt-4 md:pb-6 px-2 md:px-8">
-                        <div className="text-[10px] md:text-xs text-slate-400 mb-1 text-center uppercase tracking-wide">Kartu Tangan</div>
-                        {/* Player Hand / Action Area */}
-                        <div className="flex flex-col items-center w-full px-4 mb-4">
-
-                            {/* Action Buttons (Sort, etc) */}
-                            {/* Allow sort anytime as long as we have cards */}
-                            {(gameState.status === 'playing' || gameState.status === 'preparing') && currentPlayer.hand.length > 1 && (
-                                <div className="mb-2 z-10">
-                                    <button
-                                        onClick={() => {
-                                            console.log("Sort button clicked");
-                                            // Temporary Debug Alert
-                                            // window.alert("Mengirim permintaan sortir ke server..."); 
-                                            // Actually, window.alert might be annoying. Let's use console + visual feedback.
-                                            // User said "gabisa". 
-                                            // Let's force a visual shake or distinct log.
-                                            actions.sortHand(gameState.id);
-                                        }}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1 active:scale-95 active:bg-green-500"
-                                    >
-                                        <span>🔃</span> Urutkan
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Hand Container - Stacked Look */}
-                            <div
-                                key={`hand-container-${gameState.version}`}
-                                className={`
-                                flex justify-center items-end py-4 pl-8
-                                w-full max-w-5xl overflow-x-auto overflow-y-visible
-                                scrollbar-hide
-                                ${currentPlayer.hand.length > 8 ? '-space-x-8 md:-space-x-10 lg:-space-x-12' : '-space-x-4 md:-space-x-4'}
-                                hover:space-x-0 md:hover:space-x-2 
-                                transition-all duration-300 ease-out
-                                min-h-[120px] md:min-h-[160px]
+                            {/* Player Info (Avatar Bubble) */}
+                            <div className={`
+                                relative mb-2 px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all
+                                ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
                             `}>
-                                {currentPlayer.hand.map((c, i) => {
-                                    const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
-                                    const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
-                                    const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
-
-                                    return (
-                                        <div key={`my-hand-${c.suit}-${c.rank}-${i}`} draggable={isDraggable} onDragStart={(e) => handleDragStart(e, i, 'hand')}
-                                            className={`
-                                                relative transform transition-all duration-300 flex-shrink-0 
-                                                ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''} 
-                                                ${isSelected || preparingSelected ? '-translate-y-8 z-50 scale-110' : 'hover:-translate-y-6 hover:z-40 hover:scale-105'}
-                                                ${isSelected ? 'z-50' : 'z-' + (10 + i)} 
-                                            `}
-                                            onClick={() => {
-                                                if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
-                                                else if (gameState.status === 'playing' && isMyTurn) handleCardClick(i, 'hand');
-                                            }}
-                                            style={{ zIndex: isSelected ? 50 : 10 + i }} // Ensure correct stacking order
-                                        >
-                                            {/* Swap Button */}
-                                            {preparingSelected && selectedFaceUpIndex !== null && (
-                                                <button onClick={(e) => { e.stopPropagation(); handleSwap(); }} className="absolute -top-8 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce">
-                                                    Tukar
-                                                </button>
-                                            )}
-                                            <Card card={c} className={`shadow-xl rounded-lg w-20 h-28 sm:w-24 sm:h-36 md:w-28 md:h-40 text-sm sm:text-base md:text-lg border border-slate-300/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
-                                        </div>
-                                    );
-                                })}
+                                <div className="text-center">
+                                    <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">{p.name}</div>
+                                    {/* Badges */}
+                                    <div className="flex gap-2 justify-center mt-0.5">
+                                        {!isMe && (
+                                            <span className="text-[10px] bg-blue-500/20 text-blue-200 px-1.5 rounded border border-blue-500/30">
+                                                {p.hand.length} 🎴
+                                            </span>
+                                        )}
+                                        {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
 
-                </div>
+                            {/* FACE CARDS Area (Below Name for Top players, Above for Me... Actually always 'in front' towards table center?) 
+                                Let's keep it simple: Face Cards always "below" the name for now, or positioned carefully.
+                                Since we use absolute positions, 'below' name might clip into table. Use Z-index.
+                                Table is Z-0, Players Z-10.
+                            */}
+                            <div className="relative flex flex-col items-center -mt-1 z-20 scale-75 md:scale-90 lg:scale-100">
+                                {/* Face Down */}
+                                <div className="flex -space-x-1">
+                                    {p.faceDownCards.map((_, idx) => (
+                                        <div key={`fd-${idx}`}
+                                            draggable={isMe && gameState.status === 'playing' && isMyTurn}
+                                            onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
+                                            className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
+                                            <Card isHidden={true} className="w-10 h-14 shadow-md border border-slate-700" />
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Face Up (Overlay) */}
+                                <div className="flex -space-x-1 -mt-10">
+                                    {p.faceUpCards.map((c, idx) => {
+                                        const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
+                                        return (
+                                            <div key={`fu-${idx}`}
+                                                draggable={isMe && gameState.status === 'playing'}
+                                                onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceUp')}
+                                                onDrop={(e) => isMe && handleDrop(e, idx)}
+                                                onDragOver={(e) => isMe && handleDragOver(e)}
+                                                onClick={() => {
+                                                    if (!isMe) return;
+                                                    // FaceUp click logic (similar to existing)
+                                                    if (gameState.status === 'preparing') setSelectedFaceUpIndex(idx === selectedFaceUpIndex ? null : idx);
+                                                    else if (gameState.status === 'playing' && isMyTurn && currentPlayer!.hand.length === 0) {
+                                                        setSelectedCardIndices(prev => prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]);
+                                                    }
+                                                }}
+                                                className={`transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
+                                            >
+                                                <Card card={c} className="w-10 h-14 shadow-lg" />
+                                                {/* Swap Drop Zone Highlight */}
+                                                {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded" />}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                        </div>
+                    );
+                })}
+
+
+                {/* LOBBY OVERLAY (If Waiting) */}
+                {gameState.status === 'waiting' && (
+                    <div className="absolute inset-0 bg-black/70 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
+                        <h2 className="text-3xl font-bold text-white mb-4">Lobby Room</h2>
+                        <div className="text-slate-400 mb-8">{gameState.players.filter(p => p.isReady).length} / {gameState.players.length} Ready</div>
+
+                        {isHost && gameState.players.length > 1 && gameState.players.every(p => p.isReady) ? (
+                            <button onClick={() => actions.startGame(gameState.id)} className="bg-yellow-500 text-black px-8 py-3 rounded-full font-bold text-xl hover:scale-105 transition">Start Game</button>
+                        ) : !currentPlayer.isReady ? (
+                            <button onClick={onSetReady} className="bg-green-600 text-white px-8 py-3 rounded-full font-bold text-xl hover:scale-105 transition">I'm Ready</button>
+                        ) : (
+                            <div className="text-yellow-400 font-bold animate-pulse">Waiting for host...</div>
+                        )}
+                    </div>
+                )}
 
             </div>
 
-            {/* Discard Pile Viewer Modal */}
-            {showDiscardPile && gameState.discardPile.length > 0 && (
-                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8 animate-fade-in" onClick={() => setShowDiscardPile(false)}>
-                    <div className="bg-slate-800/95 rounded-2xl p-8 max-w-6xl max-h-[80vh] overflow-auto border-2 border-slate-600 backdrop-blur-sm">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold text-white">Kartu Buangan ({gameState.discardPile.length})</h3>
-                            <button onClick={() => setShowDiscardPile(false)} className="text-slate-400 hover:text-white text-3xl leading-none">×</button>
-                        </div>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            {gameState.discardPile.map((card, i) => (
-                                <div key={`discard-${i}`} className="transform transition-all duration-300 hover:scale-110 hover:-translate-y-2" style={{ animation: `slideIn 0.3s ease-out ${i * 0.05}s both` }}>
-                                    <Card card={card} className="w-20 h-28 shadow-xl" />
+
+            {/* --- FOOTER: MY HAND (Fixed Bottom) --- */}
+            {/* Keeps the original hand interactions intact */}
+            <div className="z-50 relative pointer-events-none">
+                {/* Action Buttons Container (Pointer Events Auto) */}
+                <div className="flex justify-center gap-4 mb-2 pointer-events-auto">
+                    {/* Play Button */}
+                    {gameState.status === 'playing' && isMyTurn && selectedCardIndices.length > 0 && (
+                        <button onClick={() => handleExecutePlay('hand')} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-full font-bold shadow-lg animate-bounce">
+                            Mainkan {selectedCardIndices.length} Kartu
+                        </button>
+                    )}
+
+                    {/* Take Pile */}
+                    {gameState.status === 'playing' && isMyTurn && gameState.discardPile.length > 0 && (
+                        <button onClick={onTakePile} className="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                            Ambil
+                        </button>
+                    )}
+
+                    {/* Ready Button (Preparing) */}
+                    {gameState.status === 'preparing' && !currentPlayer.isReady && (
+                        <button onClick={onSetReady} className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-full font-bold shadow-lg">
+                            SIAP
+                        </button>
+                    )}
+
+                    {/* Sort Button */}
+                    {currentPlayer.hand.length > 1 && (
+                        <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
+                            🔃 Urutkan
+                        </button>
+                    )}
+                </div>
+
+                {/* The Hand */}
+                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-4 pt-8 px-4">
+                    <div
+                        key={`hand-container-${gameState.version}`}
+                        className={`
+                            flex justify-center items-end 
+                            w-full max-w-6xl mx-auto overflow-x-visible
+                            ${currentPlayer.hand.length > 8 ? '-space-x-8 md:-space-x-12' : '-space-x-4 md:-space-x-6'}
+                            hover:space-x-0 md:hover:space-x-1 transition-all duration-300 min-h-[140px]
+                        `}>
+                        {currentPlayer.hand.map((c, i) => {
+                            const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
+                            const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
+                            return (
+                                <div key={`my-hand-${c.suit}-${c.rank}-${i}`}
+                                    draggable={gameState.status !== 'waiting'}
+                                    onDragStart={(e) => handleDragStart(e, i, 'hand')}
+                                    onClick={() => {
+                                        if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
+                                        else if (gameState.status === 'playing' && isMyTurn) handleCardClick(i, 'hand');
+                                    }}
+                                    className={`relative transform transition-all duration-200 origin-bottom hover:-translate-y-4 hover:scale-110 z-${10 + i} ${isSelected || preparingSelected ? '-translate-y-8 scale-110 z-50' : ''}`}
+                                    style={{ zIndex: isSelected ? 100 : 10 + i }}
+                                >
+                                    {/* Swap Button Overlay */}
+                                    {preparingSelected && selectedFaceUpIndex !== null && (
+                                        <button onClick={(e) => { e.stopPropagation(); handleSwap(); }} className="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 rounded-full px-2 py-0.5 text-[10px] font-bold animate-bounce z-50">Tukar</button>
+                                    )}
+                                    <Card card={c} className={`shadow-2xl rounded-lg w-24 h-36 md:w-32 md:h-48 border border-slate-400/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
                                 </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* Discard Modal (Keep existing) */}
+            {showDiscardPile && (
+                <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-8" onClick={() => setShowDiscardPile(false)}>
+                    <div className="bg-slate-800 p-6 rounded-2xl max-w-4xl max-h-full overflow-auto">
+                        <h3 className="text-2xl font-bold mb-4">Kartu Buangan</h3>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            {gameState.discardPile.map((c, i) => (
+                                <Card key={i} card={c} className="w-16 h-24" />
                             ))}
                         </div>
                     </div>
                 </div>
             )}
-        </div >
+
+        </div>
     );
 };
