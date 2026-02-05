@@ -558,6 +558,7 @@ export class GameManager {
 
         // Check if next player is Bot
         const nextPlayer = game.players[nextIndex];
+        console.log(`[advanceTurn] Turn advanced to ${nextPlayer.name} (isBot: ${nextPlayer.isBot})`);
 
         // Auto-take pile if player has no valid moves
         if (!nextPlayer.isBot && game.discardPile.length > 0) {
@@ -572,7 +573,10 @@ export class GameManager {
         }
 
         if (nextPlayer.isBot) {
+            console.log(`[advanceTurn] Calling processBotTurn for ${nextPlayer.name}...`);
             this.processBotTurn(game, nextPlayer.id);
+        } else {
+            console.log(`[advanceTurn] Next player is human, waiting for their move...`);
         }
     }
 
