@@ -488,6 +488,19 @@ export class GameManager {
             this.advanceTurn(game);
         } else {
             console.log(`[GameManager] Skipping turn advance - same player continues`);
+
+            // Auto-take pile if player has no valid moves (for HUMAN players)
+            // Bots already handle this in processBotTurn
+            if (!currentPlayer.isBot && game.discardPile.length > 0) {
+                const hasValidMove = this.playerHasValidMove(game, currentPlayer);
+                if (!hasValidMove) {
+                    console.log(`[GameManager] Player ${currentPlayer.name} (Continuing Turn) has no valid moves, auto-taking pile...`);
+                    setTimeout(() => {
+                        this.takePile(game.id, currentPlayer.id);
+                    }, 1000);
+                }
+            }
+
             // If same player continues and it's a bot, trigger bot turn
             if (currentPlayer.isBot) {
                 console.log(`[GameManager] Same player is bot, triggering bot turn...`);
