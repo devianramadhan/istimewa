@@ -723,17 +723,7 @@ export class GameManager {
                     console.log(`[Bot] No valid move and pile is empty for bot ${bot.name}`);
                 }
             }
-            // No valid move -> Take Pile
-            console.log(`[Bot] No valid cards found`);
-            if (game.discardPile.length > 0) {
-                console.log(`[Bot] Taking pile (${game.discardPile.length} cards)`);
-                this.takePile(game.id, bot.id);
-            } else {
-                // Edge case: pile is empty and no valid move
-                // This shouldn't happen in normal game flow
-                console.log(`[Bot] No valid move and pile is empty for bot ${bot.name}`);
-            }
-        }
+
 
             // After Action, trigger update via callback
             // GameManager is purely state. Server emits via onGameUpdate callback
@@ -744,29 +734,29 @@ export class GameManager {
             // Since this runs in async, we need a way to notify server index.ts.
             // For this quick prototype, I'll attach a callback/listener to GameManager.
         }, 1500);
-}
+    }
 
     // Add Listener Support
     public onGameUpdate: ((roomId: string) => void) | null = null;
 
     private triggerUpdate(roomId: string) {
-    if (this.onGameUpdate) this.onGameUpdate(roomId);
-}
+        if (this.onGameUpdate) this.onGameUpdate(roomId);
+    }
 
     // Helper validation (extracted)
     private isValidMove(card: Card, topCard: Card | null): boolean {
-    if (!topCard) return true;
+        if (!topCard) return true;
 
-    // Check card 7 rule FIRST (before special cards)
-    // When top card is 7, next player must play card < 7
-    if (topCard.rank === '7') {
-        return getCardValue(card.rank) < 7;
+        // Check card 7 rule FIRST (before special cards)
+        // When top card is 7, next player must play card < 7
+        if (topCard.rank === '7') {
+            return getCardValue(card.rank) < 7;
+        }
+
+        // Special cards (2, 10, Joker) can be played on anything (except after 7)
+        if (isSpecialCard(card.rank)) return true;
+
+        // Normal rule: play equal or higher
+        return getCardValue(card.rank) >= getCardValue(topCard.rank);
     }
-
-    // Special cards (2, 10, Joker) can be played on anything (except after 7)
-    if (isSpecialCard(card.rank)) return true;
-
-    // Normal rule: play equal or higher
-    return getCardValue(card.rank) >= getCardValue(topCard.rank);
-}
 }
