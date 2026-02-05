@@ -172,31 +172,38 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
             {/* Header Info */}
             {/* Header Info - Responsive Container */}
-            <div className="absolute top-0 w-full p-4 flex flex-row justify-between items-start z-20 pointer-events-none">
-                {/* Room ID */}
-                <div className="bg-slate-800/80 px-3 py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto max-w-[50%] flex-shrink-0">
-                    <div className="flex flex-col md:flex-row md:items-center md:gap-2">
-                        <div className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider whitespace-nowrap">Room ID</div>
-                        <div className="flex items-center gap-1">
-                            <div className="text-white font-mono text-sm md:text-lg font-bold truncate">{gameState.id}</div>
+            {/* Header Info - Responsive Container */}
+            <div className="absolute top-0 w-full p-2 md:p-4 flex flex-col md:flex-row justify-start md:justify-between items-stretch md:items-start gap-2 z-20 pointer-events-none">
+
+                {/* Top Row: Room ID & Status (Side by Side on big screens, Stacked on Mobile or Mini-Side-by-Side) */}
+
+                <div className="flex flex-row justify-between items-start w-full gap-2">
+
+                    {/* Room ID */}
+                    <div className="bg-slate-800/90 px-3 py-1.5 md:py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto flex-shrink-0">
+                        <div className="flex flex-row items-center gap-2">
+                            <span className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider">Room:</span>
+                            <div className="text-white font-mono text-xs md:text-lg font-bold max-w-[100px] md:max-w-none truncate">{gameState.id}</div>
                             <button
                                 onClick={() => navigator.clipboard.writeText(gameState.id)}
                                 className="p-1 hover:bg-white/10 rounded transition text-blue-300"
-                                title="Copy Room ID"
                             >
                                 📋
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* Status */}
-                <div className="bg-slate-800/80 px-3 py-2 rounded-lg backdrop-blur-sm border border-slate-700 text-right pointer-events-auto max-w-[45%]">
-                    <div className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider">Status</div>
-                    <div className={`${isMyTurn ? 'text-green-400' : 'text-yellow-400'} font-bold text-sm md:text-base leading-tight break-words`}>
-                        {gameState.status === 'preparing' ? 'Persiapan' : isMyTurn ? "GILIRANMU" : `Giliran ${gameState.players[gameState.currentPlayerIndex]?.name}`}
+                    {/* Status Box */}
+                    <div className="bg-slate-800/90 px-3 py-1.5 md:py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto flex-1 min-w-0 flex flex-col items-end">
+                        <div className={`font-bold text-xs md:text-base leading-tight truncate w-full text-right ${isMyTurn ? 'text-green-400' : 'text-yellow-400'}`}>
+                            {gameState.status === 'preparing' ? 'Persiapan' : isMyTurn ? "GILIRANMU" : `Giliran ${gameState.players[gameState.currentPlayerIndex]?.name}`}
+                        </div>
+                        {gameState.message && (
+                            <div className="text-[10px] md:text-xs text-blue-300 mt-0.5 leading-tight truncate w-full text-right">
+                                {gameState.message}
+                            </div>
+                        )}
                     </div>
-                    {gameState.message && <div className="text-[10px] md:text-xs text-blue-300 mt-1 leading-tight">{gameState.message}</div>}
                 </div>
             </div>
 
