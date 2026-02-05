@@ -509,7 +509,10 @@ export class GameManager {
 
         game.message = `${currentPlayer.name} took the pile`;
 
+        console.log(`[GameManager] ${currentPlayer.name} took pile, advancing turn...`);
         this.advanceTurn(game);
+        console.log(`[GameManager] Turn advanced to player ${game.players[game.currentPlayerIndex].name}`);
+
         return true;
     }
 
