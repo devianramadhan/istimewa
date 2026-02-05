@@ -12,7 +12,7 @@ const mockGame: GameState = {
     id: 'test-room',
     players: [],
     deck: [],
-    discardPile: [{ suit: 'diamonds', rank: '5' }], // Top card is 5
+    discardPile: [{ suit: 'diamonds', rank: '7' }], // Top card is 7 (Rule: Next < 7)
     currentPlayerIndex: 0,
     direction: 1,
     status: 'playing',
@@ -20,13 +20,13 @@ const mockGame: GameState = {
     message: ''
 };
 
-// Mock Player with 4 and 3
+// Mock Player with Special Cards (10, Joker)
 const mockPlayer: Player = {
     id: 'p1',
     name: 'User',
     hand: [
-        { suit: 'spades', rank: '4' },
-        { suit: 'clubs', rank: '3' }
+        { suit: 'clubs', rank: '10' }, // Special (Burn) - Should be valid on 7
+        { suit: 'hearts', rank: 'J' }  // Invalid (> 7)
     ],
     faceUpCards: [],
     faceDownCards: [],
@@ -40,28 +40,26 @@ mockGame.players.push(mockPlayer);
 gm.games.set('test-room', mockGame);
 
 // Test getCardValue
-console.log(`Value of 4: ${getCardValue('4')}`);
-console.log(`Value of 3: ${getCardValue('3')}`);
-console.log(`Value of 5: ${getCardValue('5')}`);
+console.log(`Value of 10: ${getCardValue('10')}`);
+console.log(`Value of 7: ${getCardValue('7')}`);
 
 // Test isValidMove manually
 const topCard = mockGame.discardPile[0];
 console.log(`Top Card: ${topCard.rank} (Value: ${getCardValue(topCard.rank)})`);
 
-for (const card of mockPlayer.hand) {
-    const val = getCardValue(card.rank);
-    const topVal = getCardValue(topCard.rank);
-    const isValid = val >= topVal;
-    console.log(`Card ${card.rank} (${val}) >= ${topCard.rank} (${topVal}) ? ${isValid}`);
-    // Check GameManager's method if accessible (it's private, but we can verify logic)
-}
+const card10 = mockPlayer.hand[0]; // 10
+const cardJ = mockPlayer.hand[1];  // J
 
-// Access private method via any cast
-const hasValid = (gm as any).playerHasValidMove(mockGame, mockPlayer);
-console.log(`playerHasValidMove Result: ${hasValid}`);
+// Access private method helper via prototype/any or just reimplement logic for test?
+// Better to call the method if possible.
+const isValid10 = (gm as any).isValidMove(card10, topCard);
+console.log(`Is '10' valid on '7'? Result: ${isValid10} (Expected: TRUE)`);
 
-if (hasValid) {
-    console.error("FAIL: Logic says VALID move exists, but it should be INVALID");
+const isValidJ = (gm as any).isValidMove(cardJ, topCard);
+console.log(`Is 'J' valid on '7'? Result: ${isValidJ} (Expected: FALSE)`);
+
+if (!isValid10) {
+    console.error("FAIL: Logic incorrectly blocks Special Card '10' on '7'");
 } else {
-    console.log("SUCCESS: Logic correctly identifies NO valid moves");
+    console.log("SUCCESS: Logic correctly allows Special Card '10' on '7'");
 }

@@ -805,14 +805,14 @@ export class GameManager {
     private isValidMove(card: Card, topCard: Card | null): boolean {
         if (!topCard) return true;
 
-        // Check card 7 rule FIRST (before special cards)
+        // Special cards (2, 7, 10, Joker) can be played on anything (ANYTIME per user request)
+        if (isSpecialCard(card.rank)) return true;
+
+        // Check card 7 rule (Only applies if played card is NOT special)
         // When top card is 7, next player must play card < 7
         if (topCard.rank === '7') {
             return getCardValue(card.rank) < 7;
         }
-
-        // Special cards (2, 10, Joker) can be played on anything (except after 7)
-        if (isSpecialCard(card.rank)) return true;
 
         // Normal rule: play equal or higher
         return getCardValue(card.rank) >= getCardValue(topCard.rank);
