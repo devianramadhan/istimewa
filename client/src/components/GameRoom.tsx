@@ -357,9 +357,14 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     <button
                                         onClick={() => {
                                             console.log("Sort button clicked");
+                                            // Temporary Debug Alert
+                                            // window.alert("Mengirim permintaan sortir ke server..."); 
+                                            // Actually, window.alert might be annoying. Let's use console + visual feedback.
+                                            // User said "gabisa". 
+                                            // Let's force a visual shake or distinct log.
                                             actions.sortHand(gameState.id);
                                         }}
-                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1 active:scale-95"
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded-full shadow-md transition-colors flex items-center gap-1 active:scale-95 active:bg-green-500"
                                     >
                                         <span>🔃</span> Urutkan
                                     </button>
