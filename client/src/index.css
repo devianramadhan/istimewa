@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* stylelint-disable-next-line at-rule-no-unknown */
 @theme {
   --color-slate-900: #0f172a;
   --color-slate-800: #1e293b;
@@ -8,6 +9,7 @@
 }
 
 body {
+  /* stylelint-disable-next-line at-rule-no-unknown */
   @apply bg-slate-900 text-white min-h-screen;
 }
 

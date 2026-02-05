@@ -6,7 +6,6 @@ import { GameRoom } from './components/GameRoom';
 
 function App() {
   const {
-    socket,
     gameState,
     isConnected,
     playerId,
