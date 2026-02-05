@@ -27,7 +27,6 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
     };
 
     return (
-    return (
         <div className="flex items-center justify-center gap-6 md:gap-12 p-4 md:p-8 bg-slate-800/50 rounded-2xl border border-slate-700/50 backdrop-blur-sm transition-all">
             {/* Deck */}
             <div className="flex flex-col items-center gap-2">
@@ -74,6 +73,5 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
                 <span className="text-slate-400 text-xs md:text-sm font-medium">Buangan ({discardPile.length})</span>
             </div>
         </div>
-    );
     );
 };
