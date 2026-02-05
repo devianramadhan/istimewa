@@ -1,4 +1,4 @@
-# Online Card Game - Palance
+# Istimewa - Online Card Game
 
 A real-time multiplayer card game built with React, TypeScript, and Socket.IO.
 
@@ -37,8 +37,8 @@ A real-time multiplayer card game built with React, TypeScript, and Socket.IO.
 
 1. Clone the repository
 ```bash
-git clone <your-repo-url>
-cd online-card-game
+git clone https://github.com/devianramadhan/istimewa.git
+cd istimewa
 ```
 
 2. Install dependencies for both client and server
@@ -91,7 +91,7 @@ npm run dev
 ## Project Structure
 
 ```
-online-card-game/
+istimewa/
 ├── client/          # React frontend
 │   ├── src/
 │   │   ├── components/
