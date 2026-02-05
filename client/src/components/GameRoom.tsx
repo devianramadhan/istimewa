@@ -290,16 +290,17 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 )}
 
                 {gameState.status === 'preparing' && !currentPlayer.isReady && (
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
+                    <div className="absolute bottom-[200px] md:bottom-24 right-4 md:right-8 z-50 flex flex-col items-end pointer-events-auto">
+                        <div className="text-xs text-white mb-2 bg-black/60 px-3 py-1 rounded backdrop-blur-sm animate-pulse">
+                            Sudah selesai tukar?
+                        </div>
                         <button
                             onClick={onSetReady}
-                            className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold shadow-2xl text-xl animate-bounce border-4 border-green-400"
+                            className="bg-green-600 hover:bg-green-700 text-white w-16 h-16 md:w-auto md:h-auto md:px-8 md:py-3 rounded-full font-bold shadow-2xl text-xs md:text-xl border-4 border-green-400 flex items-center justify-center transform transition hover:scale-110 active:scale-95"
                         >
-                            SIAP MAIN
+                            <span className="md:hidden">SIAP</span>
+                            <span className="hidden md:inline">SIAP MAIN</span>
                         </button>
-                        <div className="text-center text-xs text-white mt-2 bg-black/50 px-2 py-1 rounded">
-                            Klik setelah selesai tukar kartu
-                        </div>
                     </div>
                 )}
 
