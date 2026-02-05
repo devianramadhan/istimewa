@@ -416,9 +416,10 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* My Hand - Responsive Fixed Bottom */}
-                <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
+                {/* My Hand - Responsive Fixed Bottom */}
+                <div className="flex flex-col items-center bg-black/40 p-2 md:p-6 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb-4 md:pb-8 safe-area-bottom">
                     <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
-                    <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
+                    <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end w-full justify-center">
                         {currentPlayer.hand.map((c, i) => {
                             const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
                             const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
@@ -431,7 +432,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     onDragStart={(e) => handleDragStart(e, i, 'hand')}
                                     className={`relative transform transition-all flex-shrink-0
                                         ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}
-                                        ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-6 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:z-30'}
+                                        ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-10 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-6 hover:z-30'}
                                     `}
                                     onClick={() => {
                                         if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
