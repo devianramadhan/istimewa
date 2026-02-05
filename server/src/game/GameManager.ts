@@ -621,118 +621,128 @@ export class GameManager {
     private processBotTurn(game: GameState, botId: string) {
         // Delay to simulate thinking
         setTimeout(() => {
-            const bot = game.players.find(p => p.id === botId);
-            if (!bot) return;
+            try {
+                const bot = game.players.find(p => p.id === botId);
+                if (!bot) return;
 
-            console.log(`[Bot] ${bot.name} is taking turn...`);
+                console.log(`[Bot] ${bot.name} is taking turn...`);
 
-            // Bot Logic:
-            // 1. Find all valid cards from current source (Hand -> FaceUp -> FaceDown)
-            // 2. Randomly pick one valid card to play
-            // 3. If no valid cards, take pile
-
-            const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
-            console.log(`[Bot] Top card:`, topCard ? `${topCard.rank}${topCard.suit}` : 'null (empty pile)');
-
-            let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
-            let candidateIndices: number[] = [];
-
-            // Determine Source
-            if (bot.hand.length > 0) source = 'hand';
-            else if (bot.faceUpCards.length > 0) source = 'faceUp';
-            else source = 'faceDown';
-
-            console.log(`[Bot] Source: ${source}, Cards in source: ${source === 'hand' ? bot.hand.length : source === 'faceUp' ? bot.faceUpCards.length : bot.faceDownCards.length}`);
-
-            // Find valid moves
-            const cardList = source === 'hand' ? bot.hand : (source === 'faceUp' ? bot.faceUpCards : bot.faceDownCards);
-
-            if (source === 'faceDown') {
-                // Blind play - pick random card
-                if (cardList.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * cardList.length);
-                    candidateIndices = [randomIndex];
-                    console.log(`[Bot] Blind play - selected index ${randomIndex}`);
+                // EXTRA SAFETY: Check if it's actually bot's turn
+                if (game.players[game.currentPlayerIndex].id !== botId) {
+                    console.warn(`[Bot] It is NOT my turn. Aborting.`);
+                    return;
                 }
-            } else {
-                // Find ALL valid cards
-                const validIndices: number[] = [];
-                const specialIndices: number[] = [];
-                const normalIndices: number[] = [];
 
-                for (let i = 0; i < cardList.length; i++) {
-                    const card = cardList[i];
-                    const isValid = this.isValidMove(card, topCard);
-                    // console.log(`[Bot] Checking card ${i}: ${card.rank}${card.suit} - Valid: ${isValid}`);
-                    if (isValid) {
-                        validIndices.push(i);
-                        if (isSpecialCard(card.rank)) {
-                            specialIndices.push(i);
-                        } else {
-                            normalIndices.push(i);
+                // Bot Logic:
+                // 1. Find all valid cards from current source (Hand -> FaceUp -> FaceDown)
+                // 2. Randomly pick one valid card to play
+                // 3. If no valid cards, take pile
+
+                const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
+                console.log(`[Bot] Top card:`, topCard ? `${topCard.rank}${topCard.suit}` : 'null (empty pile)');
+
+                let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
+                let candidateIndices: number[] = [];
+
+                // Determine Source
+                if (bot.hand.length > 0) source = 'hand';
+                else if (bot.faceUpCards.length > 0) source = 'faceUp';
+                else source = 'faceDown';
+
+                console.log(`[Bot] Source: ${source}, Cards in source: ${source === 'hand' ? bot.hand.length : source === 'faceUp' ? bot.faceUpCards.length : bot.faceDownCards.length}`);
+
+                // Find valid moves
+                const cardList = source === 'hand' ? bot.hand : (source === 'faceUp' ? bot.faceUpCards : bot.faceDownCards);
+
+                if (source === 'faceDown') {
+                    // Blind play - pick random card
+                    if (cardList.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * cardList.length);
+                        candidateIndices = [randomIndex];
+                        console.log(`[Bot] Blind play - selected index ${randomIndex}`);
+                    }
+                } else {
+                    // Find ALL valid cards
+                    const validIndices: number[] = [];
+                    const specialIndices: number[] = [];
+                    const normalIndices: number[] = [];
+
+                    for (let i = 0; i < cardList.length; i++) {
+                        const card = cardList[i];
+                        const isValid = this.isValidMove(card, topCard);
+                        // console.log(`[Bot] Checking card ${i}: ${card.rank}${card.suit} - Valid: ${isValid}`);
+                        if (isValid) {
+                            validIndices.push(i);
+                            if (isSpecialCard(card.rank)) {
+                                specialIndices.push(i);
+                            } else {
+                                normalIndices.push(i);
+                            }
                         }
                     }
-                }
 
-                // console.log(`[Bot] Valid indices: [${validIndices.join(', ')}]`);
-                // console.log(`[Bot] Special indices: [${specialIndices.join(', ')}]`);
+                    // console.log(`[Bot] Valid indices: [${validIndices.join(', ')}]`);
+                    // console.log(`[Bot] Special indices: [${specialIndices.join(', ')}]`);
 
-                // Prioritize Special Cards (User Request)
-                if (specialIndices.length > 0) {
-                    // Pick a random special card
-                    const randomChoice = specialIndices[Math.floor(Math.random() * specialIndices.length)];
-                    candidateIndices = [randomChoice];
-                    console.log(`[Bot] Prioritizing Special Card at count ${candidateIndices.length}`);
-                }
-                else if (normalIndices.length > 0) {
-                    // Pick a random normal card
-                    const randomChoice = normalIndices[Math.floor(Math.random() * normalIndices.length)];
-                    candidateIndices = [randomChoice];
-                    console.log(`[Bot] Selecting Normal Card at count ${candidateIndices.length}`);
-                }
-            }
-
-            if (candidateIndices.length > 0) {
-                // Try Play
-                console.log(`[Bot] Attempting to play card at index ${candidateIndices[0]} from ${source}`);
-                const success = this.playCard(game.id, bot.id, candidateIndices, source);
-                console.log(`[Bot] Play result: ${success ? 'SUCCESS' : 'FAILED'}`);
-
-                // CRITICAL FIX: If play fails (for ANY reason), fallback to taking pile immediately
-                // This prevents bot from freezing if logic says valid but playCard rejects it
-                if (!success) {
-                    console.log(`[Bot] Play failed despite valid check. Fallback: Taking Pile.`);
-                    if (game.discardPile.length > 0) {
-                        this.takePile(game.id, bot.id);
-                    } else {
-                        // Very rare edge case: Failed to play on empty pile? 
-                        // Should not happen, but force advance to unstick?
-                        // No, takePile needs pile. If empty, maybe just skip? 
-                        // Actually, if pile is empty, almost any card is valid. 
-                        // If it failed, it's a bug. But we can't take pile.
-                        console.error(`[Bot] STUCK: Failed to play on empty pile?`);
+                    // Prioritize Special Cards (User Request)
+                    if (specialIndices.length > 0) {
+                        // Pick a random special card
+                        const randomChoice = specialIndices[Math.floor(Math.random() * specialIndices.length)];
+                        candidateIndices = [randomChoice];
+                        console.log(`[Bot] Prioritizing Special Card at count ${candidateIndices.length}`);
+                    }
+                    else if (normalIndices.length > 0) {
+                        // Pick a random normal card
+                        const randomChoice = normalIndices[Math.floor(Math.random() * normalIndices.length)];
+                        candidateIndices = [randomChoice];
+                        console.log(`[Bot] Selecting Normal Card at count ${candidateIndices.length}`);
                     }
                 }
-            } else {
-                // No valid move -> Take Pile
-                console.log(`[Bot] No valid cards found`);
-                if (game.discardPile.length > 0) {
-                    console.log(`[Bot] Taking pile (${game.discardPile.length} cards)`);
-                    this.takePile(game.id, bot.id);
+
+                if (candidateIndices.length > 0) {
+                    // Try Play
+                    console.log(`[Bot] Attempting to play card at index ${candidateIndices[0]} from ${source}`);
+                    const success = this.playCard(game.id, bot.id, candidateIndices, source);
+                    console.log(`[Bot] Play result: ${success ? 'SUCCESS' : 'FAILED'}`);
+
+                    // CRITICAL FIX: If play fails (for ANY reason), fallback to taking pile immediately
+                    // This prevents bot from freezing if logic says valid but playCard rejects it
+                    if (!success) {
+                        console.log(`[Bot] Play failed despite valid check. Fallback: Taking Pile.`);
+                        if (game.discardPile.length > 0) {
+                            this.takePile(game.id, bot.id);
+                        } else {
+                            // Very rare edge case: Failed to play on empty pile? 
+                            console.error(`[Bot] STUCK: Failed to play logic on empty pile. Forcing Advance.`);
+                            this.advanceTurn(game);
+                        }
+                    }
                 } else {
-                    console.log(`[Bot] No valid move and pile is empty for bot ${bot.name}`);
+                    // No valid move -> Take Pile
+                    console.log(`[Bot] No valid cards found`);
+                    if (game.discardPile.length > 0) {
+                        console.log(`[Bot] Taking pile (${game.discardPile.length} cards)`);
+                        this.takePile(game.id, bot.id);
+                    } else {
+                        console.log(`[Bot] No valid move and pile is empty for bot ${bot.name}`);
+                        // Force Advance if totally stuck (no moves, empty pile, shouldn't happen but valid safeguard)
+                        this.advanceTurn(game);
+                    }
+                }
+
+                // After Action, trigger update via callback
+                this.triggerUpdate(roomId);
+
+            } catch (err) {
+                console.error(`[Bot] CRASH in turn logic:`, err);
+                // Safety net: Try to advance turn to unblock game
+                try {
+                    this.advanceTurn(game);
+                    this.triggerUpdate(roomId);
+                } catch (e) {
+                    console.error(`[Bot] Failed safety net advance:`, e);
                 }
             }
-
-
-            // After Action, trigger update via callback
-            // GameManager is purely state. Server emits via onGameUpdate callback
-            // Bot changes state asynchronously (setTimeout). 
-            // PROBLEM: Manager cannot emit. We need a callback or Event Emitter.
-            // Quick fix: Pass a callback or assume server polls? No polling.
-            // Solution: Manager emits event? Or return promise?
-            // Since this runs in async, we need a way to notify server index.ts.
-            // For this quick prototype, I'll attach a callback/listener to GameManager.
         }, 1500);
     }
 
