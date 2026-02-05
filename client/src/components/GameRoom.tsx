@@ -372,7 +372,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             )}
 
                             {/* Hand Container - Stacked Look */}
-                            <div className={`
+                            <div
+                                key={`hand-container-${gameState.version}`}
+                                className={`
                                 flex justify-center items-end py-4 pl-8
                                 w-full max-w-5xl overflow-x-auto overflow-y-visible
                                 scrollbar-hide
