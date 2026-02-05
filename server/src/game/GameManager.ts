@@ -251,6 +251,31 @@ export class GameManager {
         return true;
     }
 
+    sortHand(roomId: string, playerId: string): boolean {
+        const game = this.games.get(roomId);
+        // Allow sorting in 'preparing' or 'playing', as long as it's the player
+        if (!game) return false;
+
+        const player = game.players.find(p => p.id === playerId);
+        if (!player) return false;
+
+        if (player.hand.length <= 1) return true; // Nothing to sort
+
+        // Sort by Rank Value
+        player.hand.sort((a, b) => {
+            const valA = getCardValue(a.rank);
+            const valB = getCardValue(b.rank);
+            if (valA === valB) {
+                // Determine equality - maybe suit? suit order: clubs, diamonds, hearts, spades?
+                // alphabetic suit for stability: clubs, diamonds, hearts, joker, spades
+                return a.suit.localeCompare(b.suit);
+            }
+            return valA - valB;
+        });
+
+        return true;
+    }
+
     startGame(roomId: string, playerId: string): boolean {
         const game = this.games.get(roomId);
         if (!game || game.players.length < 2) return false;

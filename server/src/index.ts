@@ -74,6 +74,13 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('sort_hand', (roomId: string) => {
+        const success = gameManager.sortHand(roomId, socket.id);
+        if (success) {
+            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+        }
+    });
+
     socket.on('set_ready', (roomId: string) => {
         const success = gameManager.setPlayerReady(roomId, socket.id);
         if (success) {
