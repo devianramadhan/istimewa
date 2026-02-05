@@ -75,9 +75,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('sort_hand', (roomId: string) => {
+        console.log(`[Socket] Received sort_hand for room ${roomId} from ${socket.id}`);
         const success = gameManager.sortHand(roomId, socket.id);
         if (success) {
+            console.log(`[Socket] Sort successful, emitting update`);
             io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+        } else {
+            console.log(`[Socket] Sort failed (game/player not found or other error)`);
         }
     });
 
