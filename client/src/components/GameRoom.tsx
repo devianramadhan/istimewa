@@ -346,153 +346,157 @@ export const GameRoom: React.FC<GameRoomProps> = ({
             </div>
 
             {/* My Player Area */}
-            <div className="pb-8 px-4 flex flex-col items-center justify-end gap-4">
+            <div className="pb-8 px-4 flex flex-col items-center justify-end gap-4 pointer-events-none w-full h-full absolute inset-0">
 
-                <div className="relative h-32 flex items-center justify-center mt-8 mb-4">
-                    {/* Face Down Layer - Bottom */}
-                    <div className="absolute flex space-x-1 transform translate-y-2">
-                        {currentPlayer.faceDownCards.map((_, i) => (
-                            <div
-                                key={`my-fd-${i}`}
-                                draggable={gameState.status === 'playing' && isMyTurn}
-                                onDragStart={(e) => handleDragStart(e, i, 'faceDown')}
-                                className="transition-transform hover:-translate-y-2 cursor-pointer"
-                                onClick={() => gameState.status === 'playing' && isMyTurn ? onPlayCard([i], 'faceDown') : null}
-                            >
-                                <Card isHidden={true} className="w-20 h-28 shadow-lg border-2 border-slate-600" />
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Face Up Layer - Top (Z-Index High) */}
-                    <div className="absolute flex space-x-1 z-10 transform -translate-y-2">
-                        {currentPlayer.faceUpCards.map((c, i) => {
-                            const isSelected = gameState.status === 'playing' && currentPlayer.hand.length === 0 && selectedCardIndices.includes(i);
-                            // Stable Drop Target: Disable hover-move during preparing
-                            const canHoverMove = gameState.status !== 'preparing';
-
-                            return (
+                {/* Face Up/Down Cards - Centered above Hand */}
+                <div className="absolute bottom-[220px] md:bottom-[280px] left-0 right-0 flex justify-center pointer-events-auto z-10 scale-90 md:scale-100 origin-bottom">
+                    <div className="relative h-28 md:h-32 flex items-center justify-center">
+                        {/* Face Down Layer - Bottom */}
+                        <div className="absolute flex space-x-1 md:space-x-2 transform translate-y-2 md:translate-y-4">
+                            {currentPlayer.faceDownCards.map((_, i) => (
                                 <div
-                                    key={`my-fu-${i}`}
-                                    draggable={gameState.status === 'playing' && isMyTurn && currentPlayer.hand.length === 0}
-                                    onDragStart={(e) => handleDragStart(e, i, 'faceUp')}
-                                    className={`
-                                        transition-transform duration-200 relative
-                                        ${canHoverMove ? 'hover:-translate-y-4 cursor-pointer' : ''} 
-                                        ${selectedFaceUpIndex === i || isSelected ? 'ring-4 ring-purple-500 rounded-lg transform -translate-y-4 scale-105' : ''}
-                                    `}
-                                    onDragOver={handleDragOver}
-                                    onDrop={(e) => handleDrop(e, i)}
-                                    onClick={() => {
-                                        if (gameState.status === 'preparing') setSelectedFaceUpIndex(i === selectedFaceUpIndex ? null : i);
-                                        else if (gameState.status === 'playing' && isMyTurn) {
-                                            if (currentPlayer.hand.length > 0) return;
-                                            setSelectedCardIndices(prev => {
-                                                if (prev.length === 0) return [i];
-                                                if (prev.includes(i)) return prev.filter(idx => idx !== i);
-                                                if (currentPlayer.faceUpCards[prev[0]].rank !== c.rank) return [i];
-                                                return [...prev, i];
-                                            });
-                                        }
-                                    }}
+                                    key={`my-fd-${i}`}
+                                    draggable={gameState.status === 'playing' && isMyTurn}
+                                    onDragStart={(e) => handleDragStart(e, i, 'faceDown')}
+                                    className="transition-transform hover:-translate-y-2 cursor-pointer"
+                                    onClick={() => gameState.status === 'playing' && isMyTurn ? onPlayCard([i], 'faceDown') : null}
                                 >
-                                    <Card card={c} className={`w-20 h-28 shadow-xl ${gameState.status === 'preparing' ? 'border-2 border-dashed border-white/50 bg-white/90' : ''}`} />
-
-                                    {/* Drop Zone Highlight Overlay */}
-                                    {gameState.status === 'preparing' && (
-                                        <div className="absolute inset-0 rounded-lg border-2 border-transparent hover:border-yellow-400 hover:bg-yellow-400/20 pointer-events-none transition-colors" />
-                                    )}
+                                    <Card isHidden={true} className="w-16 h-24 md:w-20 md:h-28 shadow-lg border-2 border-slate-600" />
                                 </div>
-                            );
-                        })}
+                            ))}
+                        </div>
+
+                        {/* Face Up Layer - Top (Z-Index High) */}
+                        <div className="absolute flex space-x-1 md:space-x-2 z-10 transform -translate-y-3 md:-translate-y-4">
+                            {currentPlayer.faceUpCards.map((c, i) => {
+                                const isSelected = gameState.status === 'playing' && currentPlayer.hand.length === 0 && selectedCardIndices.includes(i);
+                                // Stable Drop Target: Disable hover-move during preparing
+                                const canHoverMove = gameState.status !== 'preparing';
+
+                                return (
+                                    <div
+                                        key={`my-fu-${i}`}
+                                        draggable={gameState.status === 'playing' && isMyTurn && currentPlayer.hand.length === 0}
+                                        onDragStart={(e) => handleDragStart(e, i, 'faceUp')}
+                                        className={`
+                                            transition-transform duration-200 relative
+                                            ${canHoverMove ? 'hover:-translate-y-4 cursor-pointer' : ''} 
+                                            ${selectedFaceUpIndex === i || isSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg transform -translate-y-4 scale-105' : ''}
+                                        `}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, i)}
+                                        onClick={() => {
+                                            if (gameState.status === 'preparing') setSelectedFaceUpIndex(i === selectedFaceUpIndex ? null : i);
+                                            else if (gameState.status === 'playing' && isMyTurn) {
+                                                if (currentPlayer.hand.length > 0) return;
+                                                setSelectedCardIndices(prev => {
+                                                    if (prev.length === 0) return [i];
+                                                    if (prev.includes(i)) return prev.filter(idx => idx !== i);
+                                                    if (currentPlayer.faceUpCards[prev[0]].rank !== c.rank) return [i];
+                                                    return [...prev, i];
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <Card card={c} className={`w-16 h-24 md:w-20 md:h-28 shadow-xl ${gameState.status === 'preparing' ? 'border-2 border-dashed border-white/50 bg-white/90' : ''}`} />
+
+                                        {/* Drop Zone Highlight Overlay */}
+                                        {gameState.status === 'preparing' && (
+                                            <div className="absolute inset-0 rounded-lg border-2 border-transparent hover:border-yellow-400 hover:bg-yellow-400/20 pointer-events-none transition-colors" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
+            </div>- Responsive Fixed Bottom */}
+            <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
+                <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
+                <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
+                    {currentPlayer.hand.map((c, i) => {
+                        const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
+                        const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
+                        const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
 
-                {/* My Hand - Responsive Fixed Bottom */}
-                <div className="flex flex-col items-center bg-black/40 p-2 md:p-4 rounded-t-2xl backdrop-blur-md border-t border-white/10 w-full max-w-4xl fixed bottom-0 z-30 pb- safe-area-bottom">
-                    <div className="text-[10px] md:text-xs text-slate-400 mb-1 md:mb-2 uppercase tracking-wide">Kartu Tangan</div>
-                    <div className="flex -space-x-4 md:space-x-2 hover:space-x-1 md:hover:space-x-3 transition-all duration-300 px-2 md:px-8 py-2 overflow-x-visible items-end min-h-[100px] md:min-h-auto w-full justify-center">
-                        {currentPlayer.hand.map((c, i) => {
-                            const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
-                            const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
-                            const isDraggable = gameState.status === 'preparing' || (gameState.status === 'playing' && isMyTurn);
-
-                            return (
-                                <div
-                                    key={`my-hand-${i}`}
-                                    draggable={isDraggable}
-                                    onDragStart={(e) => handleDragStart(e, i, 'hand')}
-                                    className={`relative transform transition-all flex-shrink-0
+                        return (
+                            <div
+                                key={`my-hand-${i}`}
+                                draggable={isDraggable}
+                                onDragStart={(e) => handleDragStart(e, i, 'hand')}
+                                className={`relative transform transition-all flex-shrink-0
                                         ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}
                                         ${isSelected || preparingSelected ? '-translate-y-4 md:-translate-y-6 z-40' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:z-30'}
                                     `}
-                                    onClick={() => {
-                                        if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
-                                        else if (gameState.status === 'playing' && isMyTurn) {
-                                            handleCardClick(i, 'hand');
-                                        }
-                                    }}
-                                >
-                                    {/* Swap Button Contextual */}
-                                    {preparingSelected && selectedFaceUpIndex !== null && (
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSwap();
-                                            }}
-                                            className="absolute -top-8 md:-top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
-                                        >
-                                            Tukar
-                                        </button>
-                                    )}
-                                    <Card
-                                        card={c}
-                                        className={`shadow-2xl transition-all duration-200
+                                onClick={() => {
+                                    if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
+                                    else if (gameState.status === 'playing' && isMyTurn) {
+                                        handleCardClick(i, 'hand');
+                                    }
+                                }}
+                            >
+                                {/* Swap Button Contextual */}
+                                {preparingSelected && selectedFaceUpIndex !== null && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSwap();
+                                        }}
+                                        className="absolute -top-8 md:-top-12 left-1/2 -translate-x-1/2 bg-purple-600 hover:bg-purple-700 text-white text-[10px] md:text-xs font-bold px-2 py-1 md:px-3 md:py-1.5 rounded-full shadow-lg whitespace-nowrap z-50 animate-bounce"
+                                    >
+                                        Tukar
+                                    </button>
+                                )}
+                                <Card
+                                    card={c}
+                                    className={`shadow-2xl transition-all duration-200
                                             w-16 h-24 sm:w-20 sm:h-28 md:w-24 md:h-36 
                                             text-xs sm:text-sm md:text-base
                                             ${isSelected || preparingSelected ? 'ring-2 md:ring-4 ring-purple-500 rounded-lg' : ''}
                                         `}
-                                    />
-                                </div>
-                            );
-                        })}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+
+            {/* Discard Pile Viewer Modal */ }
+    {
+        showDiscardPile && gameState.discardPile.length > 0 && (
+            <div
+                className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8 animate-fade-in"
+                onClick={() => setShowDiscardPile(false)}
+            >
+                <div className="bg-slate-800/95 rounded-2xl p-8 max-w-6xl max-h-[80vh] overflow-auto border-2 border-slate-600 backdrop-blur-sm">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-2xl font-bold text-white">Kartu Buangan ({gameState.discardPile.length})</h3>
+                        <button
+                            onClick={() => setShowDiscardPile(false)}
+                            className="text-slate-400 hover:text-white text-3xl leading-none"
+                        >
+                            ×
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        {gameState.discardPile.map((card, i) => (
+                            <div
+                                key={`discard-${i}`}
+                                className="transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
+                                style={{
+                                    animation: `slideIn 0.3s ease-out ${i * 0.05}s both`
+                                }}
+                            >
+                                <Card card={card} className="w-20 h-28 shadow-xl" />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
+        )
+    }
 
-            {/* Discard Pile Viewer Modal */}
-            {showDiscardPile && gameState.discardPile.length > 0 && (
-                <div
-                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8 animate-fade-in"
-                    onClick={() => setShowDiscardPile(false)}
-                >
-                    <div className="bg-slate-800/95 rounded-2xl p-8 max-w-6xl max-h-[80vh] overflow-auto border-2 border-slate-600 backdrop-blur-sm">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold text-white">Kartu Buangan ({gameState.discardPile.length})</h3>
-                            <button
-                                onClick={() => setShowDiscardPile(false)}
-                                className="text-slate-400 hover:text-white text-3xl leading-none"
-                            >
-                                ×
-                            </button>
-                        </div>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            {gameState.discardPile.map((card, i) => (
-                                <div
-                                    key={`discard-${i}`}
-                                    className="transform transition-all duration-300 hover:scale-110 hover:-translate-y-2"
-                                    style={{
-                                        animation: `slideIn 0.3s ease-out ${i * 0.05}s both`
-                                    }}
-                                >
-                                    <Card card={card} className="w-20 h-28 shadow-xl" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-        </div>
+        </div >
     );
 };
