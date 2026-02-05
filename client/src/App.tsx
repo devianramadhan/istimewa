@@ -64,9 +64,9 @@ function App() {
             />
           </div>
 
-          <div className="mt-8 text-slate-500 text-sm">
+          {/* <div className="mt-8 text-slate-500 text-sm">
             {socket ? `Connected as ID: ${socket.id}` : 'Connecting...'}
-          </div>
+          </div> */}
 
           <div className="mt-4 text-slate-600 text-xs">
             Powered By Orang Bekasi
