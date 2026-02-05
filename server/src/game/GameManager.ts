@@ -314,6 +314,13 @@ export class GameManager {
     private startPlayingPhase(game: GameState) {
         game.status = 'playing';
         game.message = `Game Started! ${game.players[game.currentPlayerIndex].name}'s turn.`;
+
+        // Check if first player is a bot and trigger bot turn
+        const currentPlayer = game.players[game.currentPlayerIndex];
+        if (currentPlayer.isBot) {
+            console.log(`[GameManager] First player is bot (${currentPlayer.name}), triggering bot turn...`);
+            this.processBotTurn(game, currentPlayer.id);
+        }
     }
 
     handleSocketDisconnect(socketId: string) {
