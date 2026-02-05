@@ -574,15 +574,24 @@ export class GameManager {
         console.log(`[advanceTurn] Turn advanced to ${nextPlayer.name} (isBot: ${nextPlayer.isBot})`);
 
         // Auto-take pile if player has no valid moves
-        if (!nextPlayer.isBot && game.discardPile.length > 0) {
-            const hasValidMove = this.playerHasValidMove(game, nextPlayer);
-            if (!hasValidMove) {
-                console.log(`[GameManager] Player ${nextPlayer.name} has no valid moves, auto-taking pile...`);
-                setTimeout(() => {
-                    this.takePile(game.id, nextPlayer.id);
-                }, 1000); // Small delay for UX
-                return; // Don't trigger bot turn yet
+        try {
+            if (!nextPlayer.isBot && game.discardPile.length > 0) {
+                const topCard = game.discardPile[game.discardPile.length - 1];
+                console.log(`[AutoTakeCheck] Checking for ${nextPlayer.name}. Pile Top: ${topCard.rank}${topCard.suit}`);
+
+                const hasValidMove = this.playerHasValidMove(game, nextPlayer);
+                console.log(`[AutoTakeCheck] hasValidMove: ${hasValidMove}`);
+
+                if (!hasValidMove) {
+                    console.log(`[GameManager] Player ${nextPlayer.name} has no valid moves, auto-taking pile...`);
+                    setTimeout(() => {
+                        this.takePile(game.id, nextPlayer.id);
+                    }, 1000); // Small delay for UX
+                    return; // Don't trigger bot turn yet
+                }
             }
+        } catch (err) {
+            console.error(`[GameManager] Error in auto-take logic:`, err);
         }
 
         if (nextPlayer.isBot) {
