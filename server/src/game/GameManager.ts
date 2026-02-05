@@ -808,6 +808,9 @@ export class GameManager {
         // Special cards (2, 7, 10, Joker) can be played on anything (ANYTIME per user request)
         if (isSpecialCard(card.rank)) return true;
 
+        // Joker on Discard Pile = RESET (Next player can play anything)
+        if (topCard.rank === 'joker') return true;
+
         // Check card 7 rule (Only applies if played card is NOT special)
         // When top card is 7, next player must play card < 7
         if (topCard.rank === '7') {

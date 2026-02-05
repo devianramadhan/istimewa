@@ -15,6 +15,17 @@ socket.on('connect', () => {
     // 1. Join/Create Game
     console.log('Creating bot game...');
     socket.emit('join_bot_game', ROOM_ID, PLAYER_NAME);
+
+    // 2. Set Ready & Start Game
+    setTimeout(() => {
+        console.log('Setting ready...');
+        socket.emit('set_ready', ROOM_ID);
+
+        setTimeout(() => {
+            console.log('Starting game...');
+            socket.emit('start_game', ROOM_ID);
+        }, 200);
+    }, 500);
 });
 
 let dealt = false;
