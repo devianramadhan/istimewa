@@ -53,7 +53,7 @@ function App() {
               Istimewsss
             </h1>
           </div>
-          <p className="text-slate-400 mb-12 text-lg">Main kartu bareng teman, realtime!</p>
+          <p className="text-slate-400 mb-12 text-lg">Se-Game?</p>
 
           <div className="w-full max-w-md animate-fade-in-up">
             <Lobby
