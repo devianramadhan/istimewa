@@ -171,26 +171,33 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         <div className="flex flex-col h-screen w-full relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black text-white">
 
             {/* Header Info */}
-            <div className="absolute top-4 left-4 z-10 bg-slate-800/80 px-4 py-2 rounded-lg backdrop-blur-sm border border-slate-700 max-w-[50%]">
-                <div className="flex items-center gap-2">
-                    <div className="text-slate-400 text-xs uppercase tracking-wider whitespace-nowrap">Room ID</div>
-                    <div className="text-white font-mono text-lg font-bold">{gameState.id}</div>
-                    <button
-                        onClick={() => navigator.clipboard.writeText(gameState.id)}
-                        className="ml-2 p-1 hover:bg-white/10 rounded transition text-blue-300"
-                        title="Copy Room ID"
-                    >
-                        📋
-                    </button>
+            {/* Header Info - Responsive Container */}
+            <div className="absolute top-0 w-full p-4 flex flex-row justify-between items-start z-20 pointer-events-none">
+                {/* Room ID */}
+                <div className="bg-slate-800/80 px-3 py-2 rounded-lg backdrop-blur-sm border border-slate-700 pointer-events-auto max-w-[50%] flex-shrink-0">
+                    <div className="flex flex-col md:flex-row md:items-center md:gap-2">
+                        <div className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider whitespace-nowrap">Room ID</div>
+                        <div className="flex items-center gap-1">
+                            <div className="text-white font-mono text-sm md:text-lg font-bold truncate">{gameState.id}</div>
+                            <button
+                                onClick={() => navigator.clipboard.writeText(gameState.id)}
+                                className="p-1 hover:bg-white/10 rounded transition text-blue-300"
+                                title="Copy Room ID"
+                            >
+                                📋
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div className="absolute top-4 right-4 z-10 bg-slate-800/80 px-4 py-2 rounded-lg backdrop-blur-sm border border-slate-700 text-right">
-                <div className="text-slate-400 text-xs uppercase tracking-wider">Status</div>
-                <div className={`${isMyTurn ? 'text-green-400' : 'text-yellow-400'} font-bold`}>
-                    {gameState.status === 'preparing' ? 'Persiapan' : isMyTurn ? "GILIRANMU" : `Giliran ${gameState.players[gameState.currentPlayerIndex]?.name}`}
+                {/* Status */}
+                <div className="bg-slate-800/80 px-3 py-2 rounded-lg backdrop-blur-sm border border-slate-700 text-right pointer-events-auto max-w-[45%]">
+                    <div className="text-slate-400 text-[10px] md:text-xs uppercase tracking-wider">Status</div>
+                    <div className={`${isMyTurn ? 'text-green-400' : 'text-yellow-400'} font-bold text-sm md:text-base leading-tight break-words`}>
+                        {gameState.status === 'preparing' ? 'Persiapan' : isMyTurn ? "GILIRANMU" : `Giliran ${gameState.players[gameState.currentPlayerIndex]?.name}`}
+                    </div>
+                    {gameState.message && <div className="text-[10px] md:text-xs text-blue-300 mt-1 leading-tight">{gameState.message}</div>}
                 </div>
-                {gameState.message && <div className="text-xs text-blue-300 mt-1">{gameState.message}</div>}
             </div>
 
             {/* Opponents Area */}
