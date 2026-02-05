@@ -554,11 +554,10 @@ export class GameManager {
             const bot = game.players.find(p => p.id === botId);
             if (!bot) return;
 
-            // Simple Logic:
-            // 1. Try to play lowest valid card from Hand
-            // 2. If Hand empty, try FaceUp
-            // 3. If valid, Play.
-            // 4. Else, Take Pile.
+            // Bot Logic:
+            // 1. Find all valid cards from current source (Hand -> FaceUp -> FaceDown)
+            // 2. Randomly pick one valid card to play
+            // 3. If no valid cards, take pile
 
             const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
 
@@ -570,20 +569,29 @@ export class GameManager {
             else if (bot.faceUpCards.length > 0) source = 'faceUp';
             else source = 'faceDown';
 
-            // Find valid move
+            // Find valid moves
             const cardList = source === 'hand' ? bot.hand : (source === 'faceUp' ? bot.faceUpCards : bot.faceDownCards);
 
             if (source === 'faceDown') {
-                // Blind play
-                if (cardList.length > 0) candidateIndices = [0];
+                // Blind play - pick random card
+                if (cardList.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * cardList.length);
+                    candidateIndices = [randomIndex];
+                }
             } else {
-                // Valid logic
+                // Find ALL valid cards
+                const validIndices: number[] = [];
                 for (let i = 0; i < cardList.length; i++) {
                     const card = cardList[i];
                     if (this.isValidMove(card, topCard)) {
-                        candidateIndices = [i];
-                        break; // Just pick first valid
+                        validIndices.push(i);
                     }
+                }
+
+                // Randomly pick one valid card
+                if (validIndices.length > 0) {
+                    const randomChoice = validIndices[Math.floor(Math.random() * validIndices.length)];
+                    candidateIndices = [randomChoice];
                 }
             }
 
@@ -591,23 +599,22 @@ export class GameManager {
                 // Try Play
                 const success = this.playCard(game.id, bot.id, candidateIndices, source);
                 if (!success && source === 'faceDown') {
-                    // Failed blind play usually means pile pickup is auto handled? 
-                    // No, playCard returns false if invalid.
-                    // If faceDown logic failed, we need to take pile?
-                    // Actually `playCard` logic needs update for failed faceDown -> pickup.
-                    // For now, if play fails, take pile.
+                    // Failed blind play - take pile
                     this.takePile(game.id, bot.id);
                 }
             } else {
-                // No valid move -> Take Pile (or try FaceDown if empty?)
-                // If pile empty, can't take. But game logic should prevent stuck state.
-                // Assuming pile not empty if we can't play.
-                this.takePile(game.id, bot.id);
+                // No valid move -> Take Pile
+                if (game.discardPile.length > 0) {
+                    this.takePile(game.id, bot.id);
+                } else {
+                    // Edge case: pile is empty and no valid move
+                    // This shouldn't happen in normal game flow
+                    console.log(`[Bot] No valid move and pile is empty for bot ${bot.name}`);
+                }
             }
 
-            // After Action, we need to trigger update? 
-            // GameManager is purely state. Server needs to know to EMIT update.
-            // Current Arch: Socket calls Manager -> Emits.
+            // After Action, trigger update via callback
+            // GameManager is purely state. Server emits via onGameUpdate callback
             // Bot changes state asynchronously (setTimeout). 
             // PROBLEM: Manager cannot emit. We need a callback or Event Emitter.
             // Quick fix: Pass a callback or assume server polls? No polling.
