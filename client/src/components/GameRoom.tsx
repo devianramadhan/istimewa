@@ -174,24 +174,24 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         const relativeIndex = (index - myIndex + total) % total;
 
         if (total === 2) {
-            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom)
+            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom of table)
             if (relativeIndex === 1) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Top)
         }
         if (total === 3) {
-            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
             if (relativeIndex === 1) return { top: '15%', left: '20%', transform: 'translate(-50%, 0)' };   // Top Left
             if (relativeIndex === 2) return { top: '15%', right: '20%', transform: 'translate(50%, 0)' };   // Top right
         }
         if (total === 4) {
-            if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
             if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };    // Left
             if (relativeIndex === 2) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Top
             if (relativeIndex === 3) return { top: '50%', right: '5%', transform: 'translate(0, -50%)' };   // Right
         }
 
         // Fallback for > 4 (Circle)
-        // Me at bottom, others distributed
-        if (relativeIndex === 0) return { bottom: '2%', left: '50%', transform: 'translate(-50%, 0)' };
+        // Me at bottom of table, others distributed
+        if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
 
         // Distribute remaining roughly around top arc
         // Simple Top-Left, Top-Center, Top-Right logic or just even spread?
