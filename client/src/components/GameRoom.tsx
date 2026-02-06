@@ -225,33 +225,38 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     // --- RECTANGULAR TABLE POSITIONING ---
                     // Table layout: 3 bottom, 2 right, 3 top, 2 left = 10 max players
                     // Main player (relativeIndex 0) is FIXED at center bottom
-                    // Cards face center with horizontal/vertical rotation only (0°, 90°, 180°, 270°)
+                    // Cards face center with horizontal/vertical rotation only
 
-                    // Position slots around the rectangular table (clockwise from bottom-center)
                     type Slot = {
                         card: React.CSSProperties;
                         name: React.CSSProperties;
                         rotation: number;
                     };
 
+                    // Positions are calculated for even distribution with proper spacing
+                    // Cards positioned at table edges but inside the table boundary
                     const slots: Slot[] = [
                         // Bottom row (3 slots) - cards face up (0° rotation)
-                        { card: { bottom: '16%', left: '50%' }, name: { bottom: '2%', left: '50%' }, rotation: 0 },      // 0: Center bottom (MAIN PLAYER)
-                        { card: { bottom: '16%', left: '25%' }, name: { bottom: '2%', left: '25%' }, rotation: 0 },      // 1: Left bottom
-                        { card: { bottom: '16%', right: '25%' }, name: { bottom: '2%', right: '25%' }, rotation: 0 },    // 2: Right bottom
+                        // Evenly spaced: 20%, 50%, 80%
+                        { card: { bottom: '12%', left: '50%' }, name: { bottom: '0%', left: '50%' }, rotation: 0 },       // 0: Center bottom (MAIN)
+                        { card: { bottom: '12%', left: '20%' }, name: { bottom: '0%', left: '20%' }, rotation: 0 },       // 1: Left bottom
+                        { card: { bottom: '12%', left: '80%' }, name: { bottom: '0%', left: '80%' }, rotation: 0 },       // 2: Right bottom
 
                         // Right column (2 slots) - cards face left (270° rotation)
-                        { card: { top: '35%', right: '8%' }, name: { top: '35%', right: '1%' }, rotation: 270 },         // 3: Right upper
-                        { card: { top: '60%', right: '8%' }, name: { top: '60%', right: '1%' }, rotation: 270 },         // 4: Right lower
+                        // Evenly spaced: 33%, 66%
+                        { card: { top: '33%', right: '3%' }, name: { top: '33%', right: '-6%' }, rotation: 270 },         // 3: Right upper
+                        { card: { top: '60%', right: '3%' }, name: { top: '60%', right: '-6%' }, rotation: 270 },         // 4: Right lower
 
                         // Top row (3 slots) - cards face down (180° rotation)
-                        { card: { top: '16%', right: '25%' }, name: { top: '2%', right: '25%' }, rotation: 180 },        // 5: Right top
-                        { card: { top: '16%', left: '50%' }, name: { top: '2%', left: '50%' }, rotation: 180 },          // 6: Center top
-                        { card: { top: '16%', left: '25%' }, name: { top: '2%', left: '25%' }, rotation: 180 },          // 7: Left top
+                        // Evenly spaced: 80%, 50%, 20%
+                        { card: { top: '12%', left: '80%' }, name: { top: '0%', left: '80%' }, rotation: 180 },           // 5: Right top
+                        { card: { top: '12%', left: '50%' }, name: { top: '0%', left: '50%' }, rotation: 180 },           // 6: Center top
+                        { card: { top: '12%', left: '20%' }, name: { top: '0%', left: '20%' }, rotation: 180 },           // 7: Left top
 
                         // Left column (2 slots) - cards face right (90° rotation)
-                        { card: { top: '35%', left: '8%' }, name: { top: '35%', left: '1%' }, rotation: 90 },            // 8: Left upper
-                        { card: { top: '60%', left: '8%' }, name: { top: '60%', left: '1%' }, rotation: 90 },            // 9: Left lower
+                        // Evenly spaced: 33%, 66%
+                        { card: { top: '33%', left: '3%' }, name: { top: '33%', left: '-6%' }, rotation: 90 },            // 8: Left upper
+                        { card: { top: '60%', left: '3%' }, name: { top: '60%', left: '-6%' }, rotation: 90 },            // 9: Left lower
                     ];
 
                     // Assign players to slots based on total count
@@ -382,14 +387,14 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                             return (
                                                 <>
                                                     {FaceUpGroup("z-20")}
-                                                    {FaceDownGroup("-mt-14 z-10")}
+                                                    {FaceDownGroup("-mt-8 z-10")}
                                                 </>
                                             );
                                         } else {
                                             return (
                                                 <>
                                                     {FaceDownGroup("z-10")}
-                                                    {FaceUpGroup("-mt-14 z-20")}
+                                                    {FaceUpGroup("-mt-8 z-20")}
                                                 </>
                                             );
                                         }
