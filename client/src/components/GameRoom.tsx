@@ -260,11 +260,11 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     // But we show Face Cards heavily
 
                     return (
-                        <div key={p.id} className="absolute flex flex-col items-center transition-all duration-500 w-[120px] md:w-[200px]" style={style}>
+                        <div key={p.id} className={`absolute flex ${isMe ? 'flex-col-reverse' : 'flex-col'} items-center transition-all duration-500 w-[120px] md:w-[200px]`} style={style}>
 
                             {/* Player Info (Avatar Bubble) */}
                             <div className={`
-                                relative mb-2 px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all
+                                relative ${isMe ? 'mt-2' : 'mb-2'} px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all
                                 ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
                             `}>
                                 <div className="text-center">
@@ -288,7 +288,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             */}
                             <div className="relative flex flex-col items-center -mt-1 z-20 scale-75 md:scale-90 lg:scale-100">
                                 {/* Face Down */}
-                                <div className="flex -space-x-1">
+                                <div className="flex space-x-1">
                                     {p.faceDownCards.map((_, idx) => (
                                         <div key={`fd-${idx}`}
                                             draggable={isMe && gameState.status === 'playing' && isMyTurn}
@@ -299,7 +299,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     ))}
                                 </div>
                                 {/* Face Up (Overlay) */}
-                                <div className="flex -space-x-1 -mt-10">
+                                <div className="flex space-x-1 -mt-10">
                                     {p.faceUpCards.map((c, idx) => {
                                         const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
                                         return (
@@ -386,7 +386,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* The Hand */}
-                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-4 pt-8 px-4">
+                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-2 pt-2 md:pb-4 md:pt-4 px-2 md:px-4">
                     <div
                         key={`hand-container-${gameState.version}`}
                         className={`
