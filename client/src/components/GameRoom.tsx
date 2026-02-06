@@ -412,7 +412,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* The Hand */}
-                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-1 pt-1 md:pb-2 md:pt-2 px-2 md:px-4">
+                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-1 pt-4 md:pb-2 md:pt-6 px-2 md:px-4 mt-2">
                     <div
                         key={`hand-container-${gameState.version}`}
                         className={`
@@ -432,14 +432,14 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                         if (gameState.status === 'preparing') setSelectedHandIndex(i === selectedHandIndex ? null : i);
                                         else if (gameState.status === 'playing' && isMyTurn) handleCardClick(i, 'hand');
                                     }}
-                                    className={`relative transform transition-all duration-200 origin-bottom hover:-translate-y-4 hover:scale-110 z-${10 + i} ${isSelected || preparingSelected ? '-translate-y-8 scale-110 z-50' : ''}`}
+                                    className={`relative transform transition-all duration-200 origin-bottom hover:-translate-y-3 hover:scale-105 z-${10 + i} ${isSelected || preparingSelected ? '-translate-y-5 scale-105 z-50' : ''}`}
                                     style={{ zIndex: isSelected ? 100 : 10 + i }}
                                 >
                                     {/* Swap Button Overlay */}
                                     {preparingSelected && selectedFaceUpIndex !== null && (
                                         <button onClick={(e) => { e.stopPropagation(); handleSwap(); }} className="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 rounded-full px-2 py-0.5 text-[10px] font-bold animate-bounce z-50">Tukar</button>
                                     )}
-                                    <Card card={c} className={`shadow-2xl rounded-lg w-16 h-24 md:w-20 md:h-28 border border-slate-400/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
+                                    <Card card={c} className={`shadow-2xl rounded-lg w-14 h-20 md:w-16 md:h-24 border border-slate-400/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
                                 </div>
                             );
                         })}
