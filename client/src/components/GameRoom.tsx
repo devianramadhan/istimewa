@@ -234,7 +234,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
             <div className="relative flex-1 w-full h-full z-10 overflow-hidden">
 
                 {/* THE TABLE (Green Felt) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] w-[85%] md:w-[70%] h-[50%] md:h-[60%] bg-[#276e36] rounded-[200px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-[92%] md:w-[85%] h-[55%] md:h-[65%] bg-[#276e36] rounded-[200px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
 
                     {/* Table Logo / Center Art */}
                     <div className="absolute text-green-900/30 font-serif font-bold text-4xl md:text-6xl tracking-widest select-none pointer-events-none">
@@ -288,7 +288,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             */}
                             <div className="relative flex flex-col items-center -mt-1 z-20 scale-75 md:scale-90 lg:scale-100">
                                 {/* Face Down */}
-                                <div className="flex space-x-1">
+                                <div className="flex space-x-2">
                                     {p.faceDownCards.map((_, idx) => (
                                         <div key={`fd-${idx}`}
                                             draggable={isMe && gameState.status === 'playing' && isMyTurn}
@@ -299,14 +299,14 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     ))}
                                 </div>
                                 {/* Face Up (Overlay) */}
-                                <div className="flex space-x-1 -mt-10">
+                                <div className="flex space-x-2 -mt-10">
                                     {p.faceUpCards.map((c, idx) => {
                                         const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
                                         return (
                                             <div key={`fu-${idx}`}
                                                 draggable={isMe && gameState.status === 'playing'}
                                                 onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceUp')}
-                                                onDrop={(e) => isMe && handleDrop(e, idx)}
+                                                onDrop={(e) => { e.stopPropagation(); isMe && handleDrop(e, idx); }}
                                                 onDragOver={(e) => isMe && handleDragOver(e)}
                                                 onClick={() => {
                                                     if (!isMe) return;
@@ -316,11 +316,12 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                                         setSelectedCardIndices(prev => prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]);
                                                     }
                                                 }}
-                                                className={`transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
+                                                className={`relative transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
+                                                style={{ zIndex: 10 + idx }}
                                             >
                                                 <Card card={c} small={true} className="shadow-lg" />
                                                 {/* Swap Drop Zone Highlight */}
-                                                {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded" />}
+                                                {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded pointer-events-none" />}
                                             </div>
                                         );
                                     })}
