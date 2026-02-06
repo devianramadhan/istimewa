@@ -261,16 +261,17 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         if (relIdx === 0) return 0; // Main player always center bottom
 
                         // Distribution patterns for different player counts
+                        // Ordered CLOCKWISE to ensure sequential turns match visual direction
                         const distributions: Record<number, number[]> = {
-                            2: [0, 5],                                    // Bottom, Top
+                            2: [0, 6],                                    // Bottom, Top
                             3: [0, 4, 9],                                 // Bottom, Right, Left
-                            4: [0, 4, 5, 9],                              // Bottom, Right, Top, Left
-                            5: [0, 1, 5, 6, 9],                           // 2 Bot, 2 Top, 1 L
-                            6: [0, 1, 4, 5, 6, 9],                        // 2 Bot, 1 R, 2 Top, 1 L
-                            7: [0, 1, 2, 4, 5, 6, 9],                     // 3 Bot, 1 R, 2 Top, 1 L
-                            8: [0, 1, 2, 4, 5, 6, 8, 9],                  // 3 Bot, 1 R, 3 Top, 1 L
-                            9: [0, 1, 2, 3, 5, 6, 7, 8, 9],               // 4 Bot, 4 Top, 1 L
-                            10: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],           // Full House
+                            4: [0, 4, 6, 9],                              // Bottom, Right, Top, Left
+                            5: [0, 6, 5, 9, 1],                           // Clockwise: Base -> TopR -> TopL -> Left -> BaseL
+                            6: [0, 4, 6, 5, 9, 1],                        // Clockwise
+                            7: [0, 2, 4, 6, 5, 9, 1],                     // Clockwise
+                            8: [0, 2, 4, 8, 6, 5, 9, 1],                  // Clockwise
+                            9: [0, 2, 8, 6, 5, 7, 9, 3, 1],               // Clockwise
+                            10: [0, 2, 4, 8, 6, 5, 7, 9, 3, 1],           // Clockwise Full House
                         };
 
                         const pattern = distributions[totalPlayers] || distributions[10];
