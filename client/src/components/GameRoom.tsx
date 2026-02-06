@@ -223,58 +223,70 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     const total = gameState.players.length;
 
                     // --- POSITIONING LOGIC ---
+                    // Supports 2-7 players arranged around the table
+                    // relativeIndex 0 = current player (always at bottom)
+                    // Other players are arranged clockwise from player's perspective
 
-                    // 1. CARD POSITION (Moved Inward - "On the Table")
-                    let cardStyle: React.CSSProperties = { top: '0', left: '0' };
+                    // Position configurations for different player counts
+                    // Each position has: cardStyle (on table) and nameStyle (near edge)
+                    type Position = {
+                        card: React.CSSProperties;
+                        name: React.CSSProperties;
+                    };
 
-                    // Use ~18% to place cards on the green felt, but not crowding the center deck
-                    if (total === 2) {
-                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 1) cardStyle = { top: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                    }
-                    if (total === 3) {
-                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 1) cardStyle = { top: '18%', left: '25%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 2) cardStyle = { top: '18%', right: '25%', transform: 'translate(50%, 0)' };
-                    }
-                    if (total === 4) {
-                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 1) cardStyle = { top: '50%', left: '15%', transform: 'translate(0, -50%)' }; // Left
-                        if (relativeIndex === 2) cardStyle = { top: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 3) cardStyle = { top: '50%', right: '15%', transform: 'translate(0, -50%)' }; // Right
-                    }
-                    if (total === 5) {
-                        if (relativeIndex === 1) cardStyle = { top: '50%', left: '15%', transform: 'translate(0, -50%)' };
-                        if (relativeIndex === 2) cardStyle = { top: '18%', left: '25%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 3) cardStyle = { top: '18%', right: '25%', transform: 'translate(50%, 0)' };
-                        if (relativeIndex === 4) cardStyle = { top: '50%', right: '15%', transform: 'translate(0, -50%)' };
-                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
-                    }
+                    const getPositions = (totalPlayers: number): Position[] => {
+                        // Always: index 0 = bottom (current player)
+                        // Positions go clockwise: bottom -> left -> top-left -> top -> top-right -> right
 
-                    // 2. NAME POSITION (Outside Table - Near Screen Edges)
-                    // Use positive small % (4-8%) to keep them visible on screen but "outside" the central table area
-                    let nameStyle: React.CSSProperties = { top: '0', left: '0' };
+                        const positions: Record<number, Position[]> = {
+                            2: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                            ],
+                            3: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '25%', left: '18%', transform: 'translate(-50%, 0)' }, name: { top: '8%', left: '10%', transform: 'translate(0, 0)' } },
+                                { card: { top: '25%', right: '18%', transform: 'translate(50%, 0)' }, name: { top: '8%', right: '10%', transform: 'translate(0, 0)' } },
+                            ],
+                            4: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '45%', left: '12%', transform: 'translate(0, -50%)' }, name: { top: '45%', left: '2%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '45%', right: '12%', transform: 'translate(0, -50%)' }, name: { top: '45%', right: '2%', transform: 'translate(0, -50%)' } },
+                            ],
+                            5: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '50%', left: '10%', transform: 'translate(0, -50%)' }, name: { top: '50%', left: '1%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '18%', left: '28%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '20%', transform: 'translate(0, 0)' } },
+                                { card: { top: '18%', right: '28%', transform: 'translate(50%, 0)' }, name: { top: '4%', right: '20%', transform: 'translate(0, 0)' } },
+                                { card: { top: '50%', right: '10%', transform: 'translate(0, -50%)' }, name: { top: '50%', right: '1%', transform: 'translate(0, -50%)' } },
+                            ],
+                            6: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '60%', left: '8%', transform: 'translate(0, -50%)' }, name: { top: '60%', left: '1%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '25%', left: '12%', transform: 'translate(0, 0)' }, name: { top: '8%', left: '8%', transform: 'translate(0, 0)' } },
+                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '25%', right: '12%', transform: 'translate(0, 0)' }, name: { top: '8%', right: '8%', transform: 'translate(0, 0)' } },
+                                { card: { top: '60%', right: '8%', transform: 'translate(0, -50%)' }, name: { top: '60%', right: '1%', transform: 'translate(0, -50%)' } },
+                            ],
+                            7: [
+                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
+                                { card: { top: '65%', left: '6%', transform: 'translate(0, -50%)' }, name: { top: '65%', left: '1%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '35%', left: '8%', transform: 'translate(0, -50%)' }, name: { top: '35%', left: '1%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '18%', left: '30%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '22%', transform: 'translate(0, 0)' } },
+                                { card: { top: '18%', right: '30%', transform: 'translate(50%, 0)' }, name: { top: '4%', right: '22%', transform: 'translate(0, 0)' } },
+                                { card: { top: '35%', right: '8%', transform: 'translate(0, -50%)' }, name: { top: '35%', right: '1%', transform: 'translate(0, -50%)' } },
+                                { card: { top: '65%', right: '6%', transform: 'translate(0, -50%)' }, name: { top: '65%', right: '1%', transform: 'translate(0, -50%)' } },
+                            ],
+                        };
 
-                    if (total === 2) {
-                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Screen Bottom)
-                        if (relativeIndex === 1) nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Screen Top)
-                    }
-                    else if (total === 3) {
-                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 1) nameStyle = { top: '8%', left: '15%', transform: 'translate(-50%, 0)' };
-                        if (relativeIndex === 2) nameStyle = { top: '8%', right: '15%', transform: 'translate(50%, 0)' };
-                    }
-                    else {
-                        // Fallback generic
-                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' };
-                        else if (relativeIndex === 1 && total === 4) nameStyle = { top: '50%', left: '2%', transform: 'translate(0, -50%)' }; // Left Edge
-                        else if (relativeIndex === 1 && total === 5) nameStyle = { top: '50%', left: '2%', transform: 'translate(0, -50%)' };
-                        else if ((relativeIndex === 2 && total === 4)) nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' }; // Top Edge
-                        else nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' };
-                    }
+                        return positions[totalPlayers] || positions[2];
+                    };
 
-                    // Refined Manual Overrides for 4/5 players corner/side cases could be added here
-                    // ensuring names don't overlap with cards.
+                    const allPositions = getPositions(total);
+                    const position = allPositions[relativeIndex] || allPositions[0];
+                    const cardStyle = position.card;
+                    const nameStyle = position.name;
 
                     return (
                         <React.Fragment key={p.id}>
