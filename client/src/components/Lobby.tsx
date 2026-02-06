@@ -55,7 +55,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
 
     if (view === 'menu') {
         return (
-            <div className="w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-up">
+            <div className="max-w-md w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-up">
                 <h2 className="text-3xl font-bold text-center mb-8 text-white drop-shadow-md">
                     Pilih Mode
                 </h2>
@@ -79,7 +79,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
 
     if (view === 'bot_count') {
         return (
-            <div className="w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">
+            <div className="max-w-md w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">
                 <button
                     onClick={() => setView('menu')}
                     className="mb-4 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-bold transition"
@@ -121,7 +121,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
     }
     if (view === 'online_choice') {
         return (
-            <div className="w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">
+            <div className="max-w-md w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">
                 <button
                     onClick={() => setView('menu')}
                     className="mb-4 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-bold transition"

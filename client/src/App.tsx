@@ -55,7 +55,7 @@ function App() {
           </div>
           <p className="text-slate-400 mb-12 text-lg">Se-Game?</p>
 
-          <div className="w-full animate-fade-in-up">
+          <div className="w-full max-w-md animate-fade-in-up">
             <Lobby
               onCreate={actions.createRoom}
               onJoin={actions.joinRoom}
