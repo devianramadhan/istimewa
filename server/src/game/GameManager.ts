@@ -262,23 +262,45 @@ export class GameManager {
 
         if (player.hand.length <= 1) return true; // Nothing to sort
 
-        // Helper for Sort Value (Visual Order: 2 -> A -> Joker)
-        // User requested: "Smallest to Largest from Left to Right"
-        // This implies 2 is "Small" (numeric), even if it's a power card.
-        const rankOrder: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', 'joker'];
+        // Special cards that go to the right (in order: 2, 7, 10, Joker)
+        const specialRanks: Rank[] = ['2', '7', '10', 'joker'];
 
-        const getSortValue = (rank: Rank): number => {
-            return rankOrder.indexOf(rank);
+        // Normal cards sorted from smallest to largest (3, 4, 5, 6, 8, 9, J, Q, K, A)
+        const normalRankOrder: Rank[] = ['3', '4', '5', '6', '8', '9', 'J', 'Q', 'K', 'A'];
+
+        const isSpecialRank = (rank: Rank): boolean => {
+            return specialRanks.includes(rank);
         };
 
-        // Sort by Rank Value (Weakest to Strongest)
+        const getSpecialOrder = (rank: Rank): number => {
+            return specialRanks.indexOf(rank);
+        };
+
+        const getNormalOrder = (rank: Rank): number => {
+            return normalRankOrder.indexOf(rank);
+        };
+
+        // Sort: Normal cards first (3-A), then Special cards (2, 7, 10, Joker)
         player.hand.sort((a, b) => {
-            const valA = getSortValue(a.rank);
-            const valB = getSortValue(b.rank);
-            if (valA === valB) {
+            const aIsSpecial = isSpecialRank(a.rank);
+            const bIsSpecial = isSpecialRank(b.rank);
+
+            // If one is special and one is not, normal comes first
+            if (aIsSpecial && !bIsSpecial) return 1;  // a goes right
+            if (!aIsSpecial && bIsSpecial) return -1; // b goes right
+
+            // Both are special - sort by special order (2, 7, 10, Joker)
+            if (aIsSpecial && bIsSpecial) {
+                const orderDiff = getSpecialOrder(a.rank) - getSpecialOrder(b.rank);
+                if (orderDiff !== 0) return orderDiff;
                 return a.suit.localeCompare(b.suit);
             }
-            return valA - valB;
+
+            // Both are normal - sort by normal order (3, 4, 5, 6, 8, 9, J, Q, K, A)
+            const valA = getNormalOrder(a.rank);
+            const valB = getNormalOrder(b.rank);
+            if (valA !== valB) return valA - valB;
+            return a.suit.localeCompare(b.suit);
         });
 
         // Increment version to force UI update

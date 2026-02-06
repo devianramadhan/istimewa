@@ -85,6 +85,12 @@ export function useGameSocket() {
         }
     }, [socket]);
 
+    const sortHand = useCallback((roomId: string) => {
+        if (socket) {
+            socket.emit('sort_hand', roomId);
+        }
+    }, [socket]);
+
     return {
         socket,
         gameState,
@@ -104,7 +110,8 @@ export function useGameSocket() {
             swapCards,
             setReady,
             takePile,
-            playCard
+            playCard,
+            sortHand
         }
     };
 }
