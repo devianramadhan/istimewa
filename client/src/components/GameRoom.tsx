@@ -36,6 +36,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     // Multi-select for playing
     const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
 
+    // FaceDown card selection for blind play
+    const [selectedFaceDownIndex, setSelectedFaceDownIndex] = useState<number | null>(null);
+
     // Discard pile viewer
     const [showDiscardPile, setShowDiscardPile] = useState(false);
 
@@ -294,18 +297,44 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             <div className="absolute z-20 transition-all duration-500 w-[120px] md:w-[200px] flex flex-col items-center" style={cardStyle}>
                                 <div className="relative flex flex-col items-center -mt-1 scale-75 md:scale-90 lg:scale-100">
                                     {(() => {
-                                        const FaceDownGroup = (cssClass: string) => (
-                                            <div className={`flex space-x-2 ${cssClass}`}>
-                                                {p.faceDownCards.map((_, idx) => (
-                                                    <div key={`fd-${idx}`}
-                                                        draggable={isMe && gameState.status === 'playing' && isMyTurn}
-                                                        onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
-                                                        className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
-                                                        <Card isHidden={true} small={true} className="shadow-md border border-slate-700" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        );
+                                        const FaceDownGroup = (cssClass: string) => {
+                                            // Can only select faceDown if hand AND faceUp are empty
+                                            const canSelectFaceDown = isMe && gameState.status === 'playing' && isMyTurn &&
+                                                currentPlayer!.hand.length === 0 && currentPlayer!.faceUpCards.length === 0;
+
+                                            return (
+                                                <div className={`flex space-x-2 ${cssClass}`}>
+                                                    {p.faceDownCards.map((_, idx) => {
+                                                        const isSelected = canSelectFaceDown && selectedFaceDownIndex === idx;
+                                                        return (
+                                                            <div key={`fd-${idx}`}
+                                                                draggable={isMe && gameState.status === 'playing' && isMyTurn}
+                                                                onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
+                                                                onClick={() => {
+                                                                    if (!canSelectFaceDown) return;
+                                                                    setSelectedFaceDownIndex(idx === selectedFaceDownIndex ? null : idx);
+                                                                }}
+                                                                className={`relative ${canSelectFaceDown ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform ${isSelected ? '-translate-y-4 ring-2 ring-yellow-400 rounded-lg' : ''}`}>
+                                                                {/* Pilih Button Overlay */}
+                                                                {isSelected && (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onPlayCard([idx], 'faceDown');
+                                                                            setSelectedFaceDownIndex(null);
+                                                                        }}
+                                                                        className="absolute -top-8 left-1/2 -translate-x-1/2 bg-green-600 hover:bg-green-700 text-white rounded-full px-3 py-1 text-xs font-bold animate-bounce z-50 shadow-lg"
+                                                                    >
+                                                                        Pilih
+                                                                    </button>
+                                                                )}
+                                                                <Card isHidden={true} small={true} className={`shadow-md border ${isSelected ? 'border-yellow-400' : 'border-slate-700'}`} />
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            );
+                                        };
 
                                         const FaceUpGroup = (cssClass: string) => (
                                             <div className={`flex space-x-2 ${cssClass}`}>

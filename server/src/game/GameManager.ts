@@ -457,6 +457,12 @@ export class GameManager {
             isValid = true;
             isBomb = true;
         }
+        // BLIND PLAY (faceDown): Always "valid" at this stage - we'll handle it specially later
+        else if (source === 'faceDown') {
+            // For blind play, we'll validate AFTER adding to pile
+            // Mark as valid for now, actual validation happens below
+            isValid = true;
+        }
         // Normal Validation
         else if (!effectiveTopCard) {
             isValid = true;
@@ -472,7 +478,30 @@ export class GameManager {
             }
         }
 
-        if (!isValid) return false;
+        // For non-faceDown sources, reject invalid plays
+        if (!isValid && source !== 'faceDown') return false;
+
+        // --- BLIND PLAY VALIDATION (faceDown only) ---
+        // For faceDown, check if the card would be valid. If not, we still play it but then take pile.
+        let blindPlayInvalid = false;
+        if (source === 'faceDown') {
+            // Check if the revealed card is actually valid
+            let actuallyValid = false;
+            if (!effectiveTopCard) {
+                actuallyValid = true;
+            } else if (isSpecialCard(firstCard.rank)) {
+                actuallyValid = true;
+            } else {
+                if (effectiveTopCard.rank === '7') {
+                    actuallyValid = getCardValue(firstCard.rank) < 7;
+                } else {
+                    actuallyValid = getCardValue(firstCard.rank) >= getCardValue(effectiveTopCard.rank);
+                }
+            }
+            if (!actuallyValid) {
+                blindPlayInvalid = true;
+            }
+        }
 
         // --- END GAME PENALTY CHECK ---
         // Rule: Cannot play Special Card as LAST card. If done, play it but then pick up pile.
@@ -512,6 +541,15 @@ export class GameManager {
 
         // --- SPECIAL EFFECTS ---
         let skipTurnAdvance = false;
+
+        // --- BLIND PLAY PENALTY ---
+        // If faceDown card was invalid, player takes the pile (including the just-played card)
+        if (blindPlayInvalid) {
+            game.message = `${currentPlayer.name} revealed ${firstCard.rank}${firstCard.suit} - Invalid! Taking pile...`;
+            console.log(`[GameManager] Blind play invalid! ${currentPlayer.name} must take pile.`);
+            this.takePile(roomId, playerId); // This advances turn inside
+            return true;
+        }
 
         if (triggerEndGamePenalty) {
             this.takePile(roomId, playerId); // This advances turn inside
