@@ -434,11 +434,21 @@ export class GameManager {
         let isBomb = false;
 
         // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+        // IMPORTANT: cardToBeat === null means "no restriction" (Joker played on empty pile)
+        // cardToBeat === undefined means "not set, use normal rules"
         let effectiveTopCard: Card | null = null;
+        const cardToBeatIsExplicitlyNull = game.cardToBeat === null && 'cardToBeat' in game;
+
         if (game.cardToBeat) {
+            // cardToBeat has a card value - use it
             effectiveTopCard = game.cardToBeat;
             console.log(`[PlayCard] Using cardToBeat: ${effectiveTopCard.rank}${effectiveTopCard.suit}`);
+        } else if (cardToBeatIsExplicitlyNull) {
+            // cardToBeat is explicitly null (Joker on empty pile) - no restriction
+            effectiveTopCard = null;
+            console.log(`[PlayCard] cardToBeat is null - no restriction (Joker on empty pile)`);
         } else if (game.discardPile.length > 0) {
+            // Normal case - use top of discard pile
             effectiveTopCard = game.discardPile[game.discardPile.length - 1];
         }
 
@@ -691,14 +701,19 @@ export class GameManager {
     // Helper: Check if player has any valid move
     private playerHasValidMove(game: GameState, player: any): boolean {
         // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+        // cardToBeat === null means "no restriction" (Joker on empty pile)
         let effectiveTopCard: Card | null = null;
+        const cardToBeatIsExplicitlyNull = game.cardToBeat === null && 'cardToBeat' in game;
+
         if (game.cardToBeat) {
             effectiveTopCard = game.cardToBeat;
+        } else if (cardToBeatIsExplicitlyNull) {
+            effectiveTopCard = null; // No restriction
         } else if (game.discardPile.length > 0) {
             effectiveTopCard = game.discardPile[game.discardPile.length - 1];
         }
 
-        if (!effectiveTopCard) return true; // Can always play if pile is empty
+        if (!effectiveTopCard) return true; // Can always play if no restriction
 
         // Check hand
         for (const card of player.hand) {
@@ -741,14 +756,20 @@ export class GameManager {
                 // 3. If no valid cards, take pile
 
                 // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+                // cardToBeat === null means "no restriction" (Joker on empty pile)
                 let effectiveTopCard: Card | null = null;
+                const cardToBeatIsExplicitlyNull = game.cardToBeat === null && 'cardToBeat' in game;
+
                 if (game.cardToBeat) {
                     effectiveTopCard = game.cardToBeat;
                     console.log(`[Bot] Using cardToBeat: ${effectiveTopCard.rank}${effectiveTopCard.suit}`);
+                } else if (cardToBeatIsExplicitlyNull) {
+                    effectiveTopCard = null;
+                    console.log(`[Bot] cardToBeat is null - no restriction (Joker on empty pile)`);
                 } else if (game.discardPile.length > 0) {
                     effectiveTopCard = game.discardPile[game.discardPile.length - 1];
                 }
-                console.log(`[Bot] Effective top card:`, effectiveTopCard ? `${effectiveTopCard.rank}${effectiveTopCard.suit}` : 'null (empty pile)');
+                console.log(`[Bot] Effective top card:`, effectiveTopCard ? `${effectiveTopCard.rank}${effectiveTopCard.suit}` : 'null (no restriction)');
 
                 let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
                 let candidateIndices: number[] = [];
