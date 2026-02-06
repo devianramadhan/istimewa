@@ -48,16 +48,21 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('join_bot_game', (roomId: string, playerName: string) => {
+    socket.on('join_bot_game', (roomId: string, playerName: string, botCount: number = 1) => {
+        // Validate botCount (1-6)
+        const validBotCount = Math.min(Math.max(botCount, 1), 6);
+
         // 1. Create Game
         gameManager.createGame(roomId);
 
         // 2. Add Human
         const success = gameManager.addPlayer(roomId, socket.id, playerName);
 
-        // 3. Add Bot
+        // 3. Add Bots (multiple based on botCount)
         if (success) {
-            gameManager.addBot(roomId);
+            for (let i = 0; i < validBotCount; i++) {
+                gameManager.addBot(roomId, i + 1); // Pass bot number for naming
+            }
             socket.join(roomId);
             io.to(roomId).emit('game_update', gameManager.getGame(roomId));
         } else {

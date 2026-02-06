@@ -3,13 +3,14 @@ import React, { useState } from 'react';
 interface LobbyProps {
     onCreate: (roomId: string, playerName: string) => void;
     onJoin: (roomId: string, playerName: string) => void;
-    onBotGame: (roomId: string, playerName: string) => void;
+    onBotGame: (roomId: string, playerName: string, botCount: number) => void;
 }
 
 export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => {
     const [name, setName] = useState('');
     const [roomId, setRoomId] = useState('');
-    const [view, setView] = useState<'menu' | 'online_choice' | 'create' | 'join'>('menu');
+    const [view, setView] = useState<'menu' | 'online_choice' | 'create' | 'join' | 'bot_count'>('menu');
+    const [selectedBotCount, setSelectedBotCount] = useState<number>(1);
 
     const generateRoomId = () => {
         // 8 digits + 4 letters random
@@ -47,7 +48,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
         const randomId = Math.floor(Math.random() * 10000);
         const botName = `Guest_${randomId}`;
         const botRoom = `BotRoom_${randomId}`;
-        onBotGame(botRoom, botName);
+        onBotGame(botRoom, botName, selectedBotCount);
     };
 
     // --- VIEWS ---
@@ -66,7 +67,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
                         <span>🌐</span> Main Online
                     </button>
                     <button
-                        onClick={handleBotGame}
+                        onClick={() => setView('bot_count')}
                         className="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-4 px-6 rounded-xl transition duration-200 transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-3 text-lg border border-fuchsia-500"
                     >
                         <span>🤖</span> Lawan Komputer
@@ -76,6 +77,48 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
         );
     }
 
+    if (view === 'bot_count') {
+        return (
+            <div className="max-w-md w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">
+                <button
+                    onClick={() => setView('menu')}
+                    className="mb-4 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-bold transition"
+                >
+                    ← Kembali
+                </button>
+                <h2 className="text-2xl font-bold text-center mb-2 text-fuchsia-400">
+                    🤖 Lawan Komputer
+                </h2>
+                <p className="text-center text-slate-400 text-sm mb-6">
+                    Pilih jumlah bot yang ingin dilawan
+                </p>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                    {[1, 2, 3, 4, 5, 6].map((count) => (
+                        <button
+                            key={count}
+                            onClick={() => setSelectedBotCount(count)}
+                            className={`py-4 px-4 rounded-xl font-bold text-xl transition-all duration-200 transform hover:scale-105 shadow-lg
+                                ${selectedBotCount === count
+                                    ? 'bg-fuchsia-600 text-white ring-4 ring-fuchsia-400 scale-105'
+                                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                }`}
+                        >
+                            {count} 🤖
+                        </button>
+                    ))}
+                </div>
+                <div className="text-center text-slate-400 text-sm mb-4">
+                    Total pemain: <span className="font-bold text-white">{selectedBotCount + 1}</span> (Anda + {selectedBotCount} Bot)
+                </div>
+                <button
+                    onClick={handleBotGame}
+                    className="w-full bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-bold py-4 px-6 rounded-xl transition duration-200 transform hover:scale-[1.02] shadow-lg text-lg"
+                >
+                    🎮 Mulai Permainan
+                </button>
+            </div>
+        );
+    }
     if (view === 'online_choice') {
         return (
             <div className="max-w-md w-full mx-auto p-6 bg-slate-800 rounded-lg shadow-xl animate-fade-in-right">

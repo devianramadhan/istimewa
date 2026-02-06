@@ -679,14 +679,15 @@ export class GameManager {
 
     // --- BOT LOGIC ---
 
-    addBot(roomId: string): boolean {
+    addBot(roomId: string, botNumber: number = 1): boolean {
         const game = this.games.get(roomId);
         if (!game) return false;
 
-        const botId = `bot-${Date.now()}`;
+        const botId = `bot-${Date.now()}-${botNumber}`;
+        const botName = botNumber === 1 ? 'Bot' : `Bot ${botNumber}`;
         const newPlayer: Player = {
             id: botId,
-            name: 'Computer (Bot)',
+            name: botName,
             hand: [],
             faceUpCards: [],
             faceDownCards: [],

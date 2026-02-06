@@ -100,9 +100,9 @@ export function useGameSocket() {
         actions: {
             createRoom,
             joinRoom,
-            joinBotGame: (roomId: string, playerName: string) => {
+            joinBotGame: (roomId: string, playerName: string, botCount: number = 1) => {
                 if (socket) {
-                    socket.emit('join_bot_game', roomId, playerName);
+                    socket.emit('join_bot_game', roomId, playerName, botCount);
                     setPlayerId(socket.id || null);
                 }
             },
