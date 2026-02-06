@@ -296,7 +296,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                             draggable={isMe && gameState.status === 'playing' && isMyTurn}
                                             onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
                                             className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
-                                            <Card isHidden={true} className="w-16 h-24 shadow-md border border-slate-700" />
+                                            <Card isHidden={true} small={!isMe} className="shadow-md border border-slate-700" />
                                         </div>
                                     ))}
                                 </div>
@@ -320,7 +320,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                                 }}
                                                 className={`transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
                                             >
-                                                <Card card={c} className="w-16 h-24 shadow-lg" />
+                                                <Card card={c} small={!isMe} className="shadow-lg" />
                                                 {/* Swap Drop Zone Highlight */}
                                                 {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded" />}
                                             </div>
