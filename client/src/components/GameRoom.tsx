@@ -224,8 +224,8 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                     // --- POSITIONING LOGIC ---
                     // Uses angle-based positioning for evenly-spaced players around the table
-                    // relativeIndex 0 = current player (always fixed at bottom center)
-                    // Other players are arranged clockwise with equal angular gaps
+                    // ALL players use ellipse positioning for consistent even gaps
+                    // relativeIndex 0 = current player (at bottom, angle 270°/south)
                     // Cards are rotated to face the center (deck/pile)
 
                     const getEllipsePosition = (angle: number, radiusX: number, radiusY: number) => {
@@ -238,7 +238,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         return { x, y };
                     };
 
-                    // Calculate angle for each player (except player 0 who is fixed at bottom)
+                    // Calculate angle for each player - ALL players use this for even spacing
                     // Start at 270° (bottom/south) and go clockwise
                     const anglePerPlayer = 360 / total;
                     const baseAngle = 270; // Start from bottom
@@ -247,30 +247,31 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     // Calculate rotation for cards to face center
                     // Cards at bottom (270°) need 0° rotation
                     // Cards at top (90°) need 180° rotation
-                    // Cards at left (180°) need 90° rotation
-                    // Cards at right (0°/360°) need -90° rotation
-                    const cardRotation = (playerAngle + 90) % 360; // Add 90° because 270° should map to 0°
+                    const cardRotation = (playerAngle + 90) % 360;
+
+                    // Card positions: smaller ellipse to stay inside table (green felt area)
+                    // radiusX=32%, radiusY=28% keeps cards well within the table
+                    const cardPos = getEllipsePosition(playerAngle, 32, 28);
+                    // Name positions: slightly outside cards
+                    const namePos = getEllipsePosition(playerAngle, 40, 38);
 
                     let cardStyle: React.CSSProperties;
                     let nameStyle: React.CSSProperties;
 
                     if (relativeIndex === 0) {
-                        // Main player: Fixed position at bottom center (above hand cards)
+                        // Main player: Use ellipse position but no rotation, fixed at bottom
                         cardStyle = {
-                            bottom: '18%',
-                            left: '50%',
-                            transform: 'translate(-50%, 0)'
+                            top: `${cardPos.y}%`,
+                            left: `${cardPos.x}%`,
+                            transform: 'translate(-50%, -50%)'
                         };
                         nameStyle = {
-                            bottom: '4%',
-                            left: '50%',
-                            transform: 'translate(-50%, 0)'
+                            top: `${namePos.y}%`,
+                            left: `${namePos.x}%`,
+                            transform: 'translate(-50%, -50%)'
                         };
                     } else {
                         // Other players: Use ellipse positioning with rotation
-                        const cardPos = getEllipsePosition(playerAngle, 38, 32);
-                        const namePos = getEllipsePosition(playerAngle, 46, 42);
-
                         cardStyle = {
                             top: `${cardPos.y}%`,
                             left: `${cardPos.x}%`,
