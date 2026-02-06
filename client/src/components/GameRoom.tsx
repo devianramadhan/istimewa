@@ -222,68 +222,73 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     const relativeIndex = (i - myIndex + gameState.players.length) % gameState.players.length;
                     const total = gameState.players.length;
 
-                    // --- POSITIONING LOGIC ---
-                    // Uses angle-based positioning for evenly-spaced players around the table
-                    // ALL players use ellipse positioning for consistent even gaps
-                    // relativeIndex 0 = current player (at bottom, angle 270°/south)
-                    // Cards are rotated to face the center (deck/pile)
+                    // --- RECTANGULAR TABLE POSITIONING ---
+                    // Table layout: 3 bottom, 2 right, 3 top, 2 left = 10 max players
+                    // Main player (relativeIndex 0) is FIXED at center bottom
+                    // Cards face center with horizontal/vertical rotation only (0°, 90°, 180°, 270°)
 
-                    const getEllipsePosition = (angle: number, radiusX: number, radiusY: number) => {
-                        // Convert angle to radians
-                        const rad = (angle * Math.PI) / 180;
-                        // Ellipse formula: x = centerX + radiusX * cos(angle), y = centerY + radiusY * sin(angle)
-                        // We use percentage values centered at 50%
-                        const x = 50 + radiusX * Math.cos(rad);
-                        const y = 50 + radiusY * Math.sin(rad);
-                        return { x, y };
+                    // Position slots around the rectangular table (clockwise from bottom-center)
+                    type Slot = {
+                        card: React.CSSProperties;
+                        name: React.CSSProperties;
+                        rotation: number;
                     };
 
-                    // Calculate angle for each player - ALL players use this for even spacing
-                    // Start at 270° (bottom/south) and go clockwise
-                    const anglePerPlayer = 360 / total;
-                    const baseAngle = 270; // Start from bottom
-                    const playerAngle = (baseAngle + relativeIndex * anglePerPlayer) % 360;
+                    const slots: Slot[] = [
+                        // Bottom row (3 slots) - cards face up (0° rotation)
+                        { card: { bottom: '16%', left: '50%' }, name: { bottom: '2%', left: '50%' }, rotation: 0 },      // 0: Center bottom (MAIN PLAYER)
+                        { card: { bottom: '16%', left: '25%' }, name: { bottom: '2%', left: '25%' }, rotation: 0 },      // 1: Left bottom
+                        { card: { bottom: '16%', right: '25%' }, name: { bottom: '2%', right: '25%' }, rotation: 0 },    // 2: Right bottom
 
-                    // Calculate rotation for cards to face center
-                    // Cards at bottom (270°) need 0° rotation
-                    // Cards at top (90°) need 180° rotation
-                    const cardRotation = (playerAngle + 90) % 360;
+                        // Right column (2 slots) - cards face left (270° rotation)
+                        { card: { top: '35%', right: '8%' }, name: { top: '35%', right: '1%' }, rotation: 270 },         // 3: Right upper
+                        { card: { top: '60%', right: '8%' }, name: { top: '60%', right: '1%' }, rotation: 270 },         // 4: Right lower
 
-                    // Card positions: smaller ellipse to stay inside table (green felt area)
-                    // radiusX=32%, radiusY=28% keeps cards well within the table
-                    const cardPos = getEllipsePosition(playerAngle, 32, 28);
-                    // Name positions: slightly outside cards
-                    const namePos = getEllipsePosition(playerAngle, 40, 38);
+                        // Top row (3 slots) - cards face down (180° rotation)
+                        { card: { top: '16%', right: '25%' }, name: { top: '2%', right: '25%' }, rotation: 180 },        // 5: Right top
+                        { card: { top: '16%', left: '50%' }, name: { top: '2%', left: '50%' }, rotation: 180 },          // 6: Center top
+                        { card: { top: '16%', left: '25%' }, name: { top: '2%', left: '25%' }, rotation: 180 },          // 7: Left top
 
-                    let cardStyle: React.CSSProperties;
-                    let nameStyle: React.CSSProperties;
+                        // Left column (2 slots) - cards face right (90° rotation)
+                        { card: { top: '35%', left: '8%' }, name: { top: '35%', left: '1%' }, rotation: 90 },            // 8: Left upper
+                        { card: { top: '60%', left: '8%' }, name: { top: '60%', left: '1%' }, rotation: 90 },            // 9: Left lower
+                    ];
 
+                    // Assign players to slots based on total count
+                    const getSlotForPlayer = (relIdx: number, totalPlayers: number): number => {
+                        if (relIdx === 0) return 0; // Main player always center bottom
+
+                        // Distribution patterns for different player counts
+                        const distributions: Record<number, number[]> = {
+                            2: [0, 6],                                    // bottom, top
+                            3: [0, 4, 8],                                 // bottom, right, left
+                            4: [0, 4, 6, 8],                              // bottom, right, top, left
+                            5: [0, 3, 5, 7, 9],                           // distributed
+                            6: [0, 3, 5, 6, 7, 9],
+                            7: [0, 3, 4, 5, 7, 8, 9],
+                            8: [0, 2, 3, 5, 6, 7, 8, 9],
+                            9: [0, 2, 3, 4, 5, 7, 8, 9, 1],
+                            10: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                        };
+
+                        const pattern = distributions[totalPlayers] || distributions[10];
+                        return pattern[relIdx] ?? 0;
+                    };
+
+                    const slotIndex = getSlotForPlayer(relativeIndex, total);
+                    const slot = slots[slotIndex];
+
+                    let cardStyle: React.CSSProperties = {
+                        ...slot.card,
+                        transform: `translate(-50%, ${slot.card.top ? '-50%' : '0'})${slot.rotation !== 0 ? ` rotate(${slot.rotation}deg)` : ''}`
+                    };
+
+                    // Main player doesn't rotate
                     if (relativeIndex === 0) {
-                        // Main player: Use ellipse position but no rotation, fixed at bottom
-                        cardStyle = {
-                            top: `${cardPos.y}%`,
-                            left: `${cardPos.x}%`,
-                            transform: 'translate(-50%, -50%)'
-                        };
-                        nameStyle = {
-                            top: `${namePos.y}%`,
-                            left: `${namePos.x}%`,
-                            transform: 'translate(-50%, -50%)'
-                        };
-                    } else {
-                        // Other players: Use ellipse positioning with rotation
-                        cardStyle = {
-                            top: `${cardPos.y}%`,
-                            left: `${cardPos.x}%`,
-                            transform: `translate(-50%, -50%) rotate(${cardRotation}deg)`
-                        };
-
-                        nameStyle = {
-                            top: `${namePos.y}%`,
-                            left: `${namePos.x}%`,
-                            transform: 'translate(-50%, -50%)'
-                        };
+                        cardStyle = { ...slot.card, transform: 'translate(-50%, 0)' };
                     }
+
+                    const nameStyle: React.CSSProperties = { ...slot.name, transform: 'translate(-50%, 0)' };
 
                     return (
                         <React.Fragment key={p.id}>

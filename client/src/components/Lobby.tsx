@@ -93,11 +93,11 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreate, onJoin, onBotGame }) => 
                     Pilih jumlah bot yang ingin dilawan
                 </p>
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                    {[1, 2, 3, 4, 5, 6].map((count) => (
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((count) => (
                         <button
                             key={count}
                             onClick={() => setSelectedBotCount(count)}
-                            className={`py-4 px-4 rounded-xl font-bold text-xl transition-all duration-200 transform hover:scale-105 shadow-lg
+                            className={`py-3 px-3 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 shadow-lg
                                 ${selectedBotCount === count
                                     ? 'bg-fuchsia-600 text-white ring-4 ring-fuchsia-400 scale-105'
                                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'

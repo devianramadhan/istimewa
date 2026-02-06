@@ -49,8 +49,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('join_bot_game', (roomId: string, playerName: string, botCount: number = 1) => {
-        // Validate botCount (1-6)
-        const validBotCount = Math.min(Math.max(botCount, 1), 6);
+        // Validate botCount (1-9 for max 10 players)
+        const validBotCount = Math.min(Math.max(botCount, 1), 9);
 
         // 1. Create Game
         gameManager.createGame(roomId);
