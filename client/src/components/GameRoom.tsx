@@ -24,7 +24,6 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     actions
 }) => {
     const currentPlayer = gameState.players.find(p => p.id === playerId);
-    const opponents = gameState.players.filter(p => p.id !== playerId);
     const isMyTurn = gameState.players[gameState.currentPlayerIndex]?.id === playerId;
 
     // Host is the first player in the list
@@ -198,7 +197,6 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         // Simple Top-Left, Top-Center, Top-Right logic or just even spread?
         // Let's use generic positions for 5-6
         // This is a rough heuristic
-        const angle = 180 + (180 / (total - 1)) * relativeIndex; // 180 is left, 360 is right?
         // Let's simplified: 5 players -> Left, TopLeft, TopRight, Right
         if (total === 5) {
             if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };   // Left
