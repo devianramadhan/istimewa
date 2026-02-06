@@ -197,7 +197,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
             <div className="relative flex-1 w-full h-full z-10 overflow-hidden">
 
                 {/* THE TABLE (Green Felt) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[50%] w-[98%] md:w-[95%] h-[65%] md:h-[75%] bg-[#276e36] rounded-[100px] md:rounded-[120px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[50%] w-full h-[75%] md:h-[85%] bg-[#276e36] rounded-[40px] md:rounded-[60px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
 
                     {/* Table Logo / Center Art */}
                     <div className="absolute text-green-900/30 font-serif font-bold text-4xl md:text-6xl tracking-widest select-none pointer-events-none">
