@@ -166,47 +166,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         }
     };
 
-    // --- HELPER: Position Logic ---
-    const getSeatStyle = (index: number, total: number) => {
-        // Find relative index from current player (Me is always 0 in relative terms)
-        const myIndex = gameState.players.findIndex(p => p.id === playerId);
-        // rotate so myIndex becomes 0
-        const relativeIndex = (index - myIndex + total) % total;
 
-        if (total === 2) {
-            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom inside table edge)
-            if (relativeIndex === 1) return { top: '12%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Top inside edge)
-        }
-        if (total === 3) {
-            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
-            if (relativeIndex === 1) return { top: '15%', left: '20%', transform: 'translate(-50%, 0)' };   // Top Left
-            if (relativeIndex === 2) return { top: '15%', right: '20%', transform: 'translate(50%, 0)' };   // Top right
-        }
-        if (total === 4) {
-            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
-            if (relativeIndex === 1) return { top: '45%', left: '8%', transform: 'translate(0, -50%)' };    // Left
-            if (relativeIndex === 2) return { top: '12%', left: '50%', transform: 'translate(-50%, 0)' };    // Top
-            if (relativeIndex === 3) return { top: '45%', right: '8%', transform: 'translate(0, -50%)' };   // Right
-        }
-
-        // Fallback for > 4 (Circle)
-        // Me at bottom of table, others distributed
-        if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
-
-        // Distribute remaining roughly around top arc
-        // Simple Top-Left, Top-Center, Top-Right logic or just even spread?
-        // Let's use generic positions for 5-6
-        // This is a rough heuristic
-        // Let's simplified: 5 players -> Left, TopLeft, TopRight, Right
-        if (total === 5) {
-            if (relativeIndex === 1) return { top: '45%', left: '8%', transform: 'translate(0, -50%)' };   // Left
-            if (relativeIndex === 2) return { top: '15%', left: '25%', transform: 'translate(-50%, 0)' };  // Top Left
-            if (relativeIndex === 3) return { top: '15%', right: '25%', transform: 'translate(50%, 0)' };  // Top Right
-            if (relativeIndex === 4) return { top: '45%', right: '8%', transform: 'translate(0, -50%)' };  // Right
-        }
-
-        return { top: '0', left: '0' }; // Fallback
-    };
 
     return (
         <div className="flex flex-col h-screen w-full relative overflow-hidden bg-slate-900 text-white select-none">
