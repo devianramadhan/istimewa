@@ -31,4 +31,5 @@ export interface GameState {
     winner: string | null;
     message?: string; // For game events (e.g. "Player played 7, next must play lower")
     version: number; // Increment on every update to force valid sync
+    cardToBeat?: Card | null; // Card that must be beaten after Joker in 2-player game
 }

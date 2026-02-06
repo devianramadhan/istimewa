@@ -432,7 +432,15 @@ export class GameManager {
 
         let isValid = false;
         let isBomb = false;
-        const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
+
+        // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+        let effectiveTopCard: Card | null = null;
+        if (game.cardToBeat) {
+            effectiveTopCard = game.cardToBeat;
+            console.log(`[PlayCard] Using cardToBeat: ${effectiveTopCard.rank}${effectiveTopCard.suit}`);
+        } else if (game.discardPile.length > 0) {
+            effectiveTopCard = game.discardPile[game.discardPile.length - 1];
+        }
 
         // Bomb Logic: 4 cards of same rank
         if (cardsToPlay.length === 4) {
@@ -440,17 +448,17 @@ export class GameManager {
             isBomb = true;
         }
         // Normal Validation
-        else if (!topCard) {
+        else if (!effectiveTopCard) {
             isValid = true;
         }
         else if (isSpecialCard(firstCard.rank)) {
             isValid = true;
         }
         else {
-            if (topCard.rank === '7') {
+            if (effectiveTopCard.rank === '7') {
                 if (getCardValue(firstCard.rank) < 7) isValid = true;
             } else {
-                if (getCardValue(firstCard.rank) >= getCardValue(topCard.rank)) isValid = true;
+                if (getCardValue(firstCard.rank) >= getCardValue(effectiveTopCard.rank)) isValid = true;
             }
         }
 
@@ -478,6 +486,9 @@ export class GameManager {
         }
         game.discardPile.push(...cardsToPlay);
         game.message = `${currentPlayer.name} played ${cardsToPlay.length}x ${firstCard.rank}`;
+
+        // Reset cardToBeat since player successfully played (will be set again if this is a Joker)
+        game.cardToBeat = null;
 
         // --- REFILL HAND ---
         // Rule: Must maintain min 2 cards if deck available
@@ -524,8 +535,20 @@ export class GameManager {
                 game.message += ' (Joker - Main Lagi!)';
                 // In 2-player, reversing direction means the same player goes again
                 // The player must beat the card BEFORE the joker (if any)
-                // We don't advance turn, so skipTurnAdvance = true
                 skipTurnAdvance = true;
+
+                // Find the card before Joker to set as cardToBeat
+                // Look backwards in discard pile for a non-Joker card
+                let cardBeforeJoker: Card | null = null;
+                for (let i = game.discardPile.length - 1; i >= 0; i--) {
+                    const card = game.discardPile[i];
+                    if (card.rank !== 'joker' && card.suit !== 'joker') {
+                        cardBeforeJoker = card;
+                        break;
+                    }
+                }
+                game.cardToBeat = cardBeforeJoker;
+                console.log(`[GameManager] cardToBeat set to: ${cardBeforeJoker ? cardBeforeJoker.rank + cardBeforeJoker.suit : 'null (empty pile)'}`);
             } else {
                 game.message += ' (Reverse)';
             }
@@ -591,6 +614,9 @@ export class GameManager {
 
         currentPlayer.hand.push(...game.discardPile);
         game.discardPile = [];
+
+        // Reset cardToBeat when taking pile
+        game.cardToBeat = null;
 
         game.message = `${currentPlayer.name} took the pile`;
 
@@ -664,18 +690,25 @@ export class GameManager {
 
     // Helper: Check if player has any valid move
     private playerHasValidMove(game: GameState, player: any): boolean {
-        const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
-        if (!topCard) return true; // Can always play if pile is empty
+        // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+        let effectiveTopCard: Card | null = null;
+        if (game.cardToBeat) {
+            effectiveTopCard = game.cardToBeat;
+        } else if (game.discardPile.length > 0) {
+            effectiveTopCard = game.discardPile[game.discardPile.length - 1];
+        }
+
+        if (!effectiveTopCard) return true; // Can always play if pile is empty
 
         // Check hand
         for (const card of player.hand) {
-            if (this.isValidMove(card, topCard)) return true;
+            if (this.isValidMove(card, effectiveTopCard)) return true;
         }
 
         // Check face up (only if hand is empty)
         if (player.hand.length === 0) {
             for (const card of player.faceUpCards) {
-                if (this.isValidMove(card, topCard)) return true;
+                if (this.isValidMove(card, effectiveTopCard)) return true;
             }
         }
 
@@ -707,8 +740,15 @@ export class GameManager {
                 // 2. Randomly pick one valid card to play
                 // 3. If no valid cards, take pile
 
-                const topCard = game.discardPile.length > 0 ? game.discardPile[game.discardPile.length - 1] : null;
-                console.log(`[Bot] Top card:`, topCard ? `${topCard.rank}${topCard.suit}` : 'null (empty pile)');
+                // Use cardToBeat if set (after Joker in 2-player), otherwise use top of discard pile
+                let effectiveTopCard: Card | null = null;
+                if (game.cardToBeat) {
+                    effectiveTopCard = game.cardToBeat;
+                    console.log(`[Bot] Using cardToBeat: ${effectiveTopCard.rank}${effectiveTopCard.suit}`);
+                } else if (game.discardPile.length > 0) {
+                    effectiveTopCard = game.discardPile[game.discardPile.length - 1];
+                }
+                console.log(`[Bot] Effective top card:`, effectiveTopCard ? `${effectiveTopCard.rank}${effectiveTopCard.suit}` : 'null (empty pile)');
 
                 let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
                 let candidateIndices: number[] = [];
@@ -738,7 +778,7 @@ export class GameManager {
 
                     for (let i = 0; i < cardList.length; i++) {
                         const card = cardList[i];
-                        const isValid = this.isValidMove(card, topCard);
+                        const isValid = this.isValidMove(card, effectiveTopCard);
                         // console.log(`[Bot] Checking card ${i}: ${card.rank}${card.suit} - Valid: ${isValid}`);
                         if (isValid) {
                             validIndices.push(i);

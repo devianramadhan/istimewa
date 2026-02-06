@@ -30,4 +30,5 @@ export interface GameState {
     winner: string | null;
     message?: string;
     version: number;
+    cardToBeat?: Card | null;
 }
