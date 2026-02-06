@@ -281,14 +281,11 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     relative px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all whitespace-nowrap
                                     ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
                                 `}>
-                                    <div className="text-center">
+                                    <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
                                             {p.name === 'Computer (Bot)' ? 'Bot' : p.name}
                                         </div>
-                                        {/* Badges - Hand count removed for opponents */}
-                                        <div className="flex gap-2 justify-center mt-0.5">
-                                            {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
-                                        </div>
+                                        {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
                                     </div>
                                 </div>
                             </div>
@@ -401,14 +398,14 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                     {/* Ready Button (Preparing) */}
                     {gameState.status === 'preparing' && !currentPlayer.isReady && (
-                        <button onClick={onSetReady} className="bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-full font-bold shadow-lg">
-                            SIAP
+                        <button onClick={onSetReady} className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/10 px-8 py-2 rounded-full text-sm font-bold shadow-lg transition-all">
+                            ✅ Siap
                         </button>
                     )}
 
                     {/* Sort Button */}
                     {currentPlayer.hand.length > 1 && (
-                        <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
+                        <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
                             🔃 Urutkan
                         </button>
                     )}
