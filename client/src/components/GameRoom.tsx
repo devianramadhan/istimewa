@@ -66,7 +66,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         });
     };
 
-    const handleExecutePlay = (source: 'hand' | 'faceUp') => {
+    const handleExecutePlay = (source: 'hand' | 'faceUp' | 'faceDown') => {
         if (selectedCardIndices.length === 0) return;
         onPlayCard(selectedCardIndices, source);
         setSelectedCardIndices([]);
@@ -321,7 +321,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                                                 if (!isMe) return;
                                                                 if (gameState.status === 'preparing') setSelectedFaceUpIndex(idx === selectedFaceUpIndex ? null : idx);
                                                                 else if (gameState.status === 'playing' && isMyTurn && currentPlayer!.hand.length === 0) {
-                                                                    setSelectedCardIndices(prev => prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]);
+                                                                    handleCardClick(idx, 'faceUp');
                                                                 }
                                                             }}
                                                             className={`relative transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
@@ -384,7 +384,16 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 <div className="flex justify-center gap-4 mb-2 pointer-events-auto">
                     {/* Play Button */}
                     {gameState.status === 'playing' && isMyTurn && selectedCardIndices.length > 0 && (
-                        <button onClick={() => handleExecutePlay('hand')} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-full font-bold shadow-lg animate-bounce">
+                        <button onClick={() => {
+                            // Determine source dynamically based on current player's state
+                            let source: 'hand' | 'faceUp' | 'faceDown' = 'hand';
+                            if (currentPlayer.hand.length === 0 && currentPlayer.faceUpCards.length > 0) {
+                                source = 'faceUp';
+                            } else if (currentPlayer.hand.length === 0 && currentPlayer.faceUpCards.length === 0) {
+                                source = 'faceDown';
+                            }
+                            handleExecutePlay(source);
+                        }} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-full font-bold shadow-lg animate-bounce">
                             Mainkan {selectedCardIndices.length} Kartu
                         </button>
                     )}
