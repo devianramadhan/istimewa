@@ -174,24 +174,24 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         const relativeIndex = (index - myIndex + total) % total;
 
         if (total === 2) {
-            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom of table)
-            if (relativeIndex === 1) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Top)
+            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Bottom inside table edge)
+            if (relativeIndex === 1) return { top: '12%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Top inside edge)
         }
         if (total === 3) {
-            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
             if (relativeIndex === 1) return { top: '15%', left: '20%', transform: 'translate(-50%, 0)' };   // Top Left
             if (relativeIndex === 2) return { top: '15%', right: '20%', transform: 'translate(50%, 0)' };   // Top right
         }
         if (total === 4) {
-            if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
-            if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };    // Left
-            if (relativeIndex === 2) return { top: '5%', left: '50%', transform: 'translate(-50%, 0)' };    // Top
-            if (relativeIndex === 3) return { top: '50%', right: '5%', transform: 'translate(0, -50%)' };   // Right
+            if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
+            if (relativeIndex === 1) return { top: '45%', left: '8%', transform: 'translate(0, -50%)' };    // Left
+            if (relativeIndex === 2) return { top: '12%', left: '50%', transform: 'translate(-50%, 0)' };    // Top
+            if (relativeIndex === 3) return { top: '45%', right: '8%', transform: 'translate(0, -50%)' };   // Right
         }
 
         // Fallback for > 4 (Circle)
         // Me at bottom of table, others distributed
-        if (relativeIndex === 0) return { bottom: '28%', left: '50%', transform: 'translate(-50%, 0)' };
+        if (relativeIndex === 0) return { bottom: '12%', left: '50%', transform: 'translate(-50%, 0)' };
 
         // Distribute remaining roughly around top arc
         // Simple Top-Left, Top-Center, Top-Right logic or just even spread?
@@ -199,10 +199,10 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         // This is a rough heuristic
         // Let's simplified: 5 players -> Left, TopLeft, TopRight, Right
         if (total === 5) {
-            if (relativeIndex === 1) return { top: '50%', left: '5%', transform: 'translate(0, -50%)' };   // Left
-            if (relativeIndex === 2) return { top: '10%', left: '25%', transform: 'translate(-50%, 0)' };  // Top Left
-            if (relativeIndex === 3) return { top: '10%', right: '25%', transform: 'translate(50%, 0)' };  // Top Right
-            if (relativeIndex === 4) return { top: '50%', right: '5%', transform: 'translate(0, -50%)' };  // Right
+            if (relativeIndex === 1) return { top: '45%', left: '8%', transform: 'translate(0, -50%)' };   // Left
+            if (relativeIndex === 2) return { top: '15%', left: '25%', transform: 'translate(-50%, 0)' };  // Top Left
+            if (relativeIndex === 3) return { top: '15%', right: '25%', transform: 'translate(50%, 0)' };  // Top Right
+            if (relativeIndex === 4) return { top: '45%', right: '8%', transform: 'translate(0, -50%)' };  // Right
         }
 
         return { top: '0', left: '0' }; // Fallback
@@ -234,7 +234,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
             <div className="relative flex-1 w-full h-full z-10 overflow-hidden">
 
                 {/* THE TABLE (Green Felt) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[55%] w-[92%] md:w-[85%] h-[55%] md:h-[65%] bg-[#276e36] rounded-[200px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[50%] w-[92%] md:w-[85%] h-[58%] md:h-[68%] bg-[#276e36] rounded-[200px] border-[16px] border-[#3e2723] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] flex items-center justify-center">
 
                     {/* Table Logo / Center Art */}
                     <div className="absolute text-green-900/30 font-serif font-bold text-4xl md:text-6xl tracking-widest select-none pointer-events-none">
@@ -255,80 +255,148 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 {/* PLAYERS (Seats) */}
                 {gameState.players.map((p, i) => {
                     const isMe = p.id === playerId;
-                    const style = getSeatStyle(i, gameState.players.length);
-                    // If it's Me, we hide the Hand Count badge (since I see my hand)
-                    // But we show Face Cards heavily
+                    const myIndex = gameState.players.findIndex(p => p.id === playerId);
+                    const relativeIndex = (i - myIndex + gameState.players.length) % gameState.players.length;
+                    const total = gameState.players.length;
+
+                    // --- POSITIONING LOGIC ---
+
+                    // 1. CARD POSITION (Moved Inward - "On the Table")
+                    let cardStyle: React.CSSProperties = { top: '0', left: '0' };
+
+                    // Use ~18% to place cards on the green felt, but not crowding the center deck
+                    if (total === 2) {
+                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 1) cardStyle = { top: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                    }
+                    if (total === 3) {
+                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 1) cardStyle = { top: '18%', left: '25%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 2) cardStyle = { top: '18%', right: '25%', transform: 'translate(50%, 0)' };
+                    }
+                    if (total === 4) {
+                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 1) cardStyle = { top: '50%', left: '15%', transform: 'translate(0, -50%)' }; // Left
+                        if (relativeIndex === 2) cardStyle = { top: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 3) cardStyle = { top: '50%', right: '15%', transform: 'translate(0, -50%)' }; // Right
+                    }
+                    if (total === 5) {
+                        if (relativeIndex === 1) cardStyle = { top: '50%', left: '15%', transform: 'translate(0, -50%)' };
+                        if (relativeIndex === 2) cardStyle = { top: '18%', left: '25%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 3) cardStyle = { top: '18%', right: '25%', transform: 'translate(50%, 0)' };
+                        if (relativeIndex === 4) cardStyle = { top: '50%', right: '15%', transform: 'translate(0, -50%)' };
+                        if (relativeIndex === 0) cardStyle = { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' };
+                    }
+
+                    // 2. NAME POSITION (Outside Table - Near Screen Edges)
+                    // Use positive small % (4-8%) to keep them visible on screen but "outside" the central table area
+                    let nameStyle: React.CSSProperties = { top: '0', left: '0' };
+
+                    if (total === 2) {
+                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' }; // Me (Screen Bottom)
+                        if (relativeIndex === 1) nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' };    // Opp (Screen Top)
+                    }
+                    else if (total === 3) {
+                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 1) nameStyle = { top: '8%', left: '15%', transform: 'translate(-50%, 0)' };
+                        if (relativeIndex === 2) nameStyle = { top: '8%', right: '15%', transform: 'translate(50%, 0)' };
+                    }
+                    else {
+                        // Fallback generic
+                        if (relativeIndex === 0) nameStyle = { bottom: '8%', left: '50%', transform: 'translate(-50%, 0)' };
+                        else if (relativeIndex === 1 && total === 4) nameStyle = { top: '50%', left: '2%', transform: 'translate(0, -50%)' }; // Left Edge
+                        else if (relativeIndex === 1 && total === 5) nameStyle = { top: '50%', left: '2%', transform: 'translate(0, -50%)' };
+                        else if ((relativeIndex === 2 && total === 4)) nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' }; // Top Edge
+                        else nameStyle = { top: '8%', left: '50%', transform: 'translate(-50%, 0)' };
+                    }
+
+                    // Refined Manual Overrides for 4/5 players corner/side cases could be added here
+                    // ensuring names don't overlap with cards.
 
                     return (
-                        <div key={p.id} className={`absolute flex ${isMe ? 'flex-col-reverse' : 'flex-col'} items-center transition-all duration-500 w-[120px] md:w-[200px]`} style={style}>
-
-                            {/* Player Info (Avatar Bubble) */}
-                            <div className={`
-                                relative ${isMe ? 'mt-2' : 'mb-2'} px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all
-                                ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
-                            `}>
-                                <div className="text-center">
-                                    <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">{p.name}</div>
-                                    {/* Badges */}
-                                    <div className="flex gap-2 justify-center mt-0.5">
-                                        {!isMe && (
-                                            <span className="text-[10px] bg-blue-500/20 text-blue-200 px-1.5 rounded border border-blue-500/30">
-                                                {p.hand.length} 🎴
-                                            </span>
-                                        )}
-                                        {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
+                        <React.Fragment key={p.id}>
+                            {/* --- CONTAINER 1: NAME (Outside) --- */}
+                            <div className="absolute z-30 transition-all duration-500 w-[120px] md:w-[200px] flex justify-center pointer-events-none" style={nameStyle}>
+                                <div className={`
+                                    relative px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all whitespace-nowrap
+                                    ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
+                                `}>
+                                    <div className="text-center">
+                                        <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
+                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name}
+                                        </div>
+                                        {/* Badges - Hand count removed for opponents */}
+                                        <div className="flex gap-2 justify-center mt-0.5">
+                                            {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* FACE CARDS Area (Below Name for Top players, Above for Me... Actually always 'in front' towards table center?) 
-                                Let's keep it simple: Face Cards always "below" the name for now, or positioned carefully.
-                                Since we use absolute positions, 'below' name might clip into table. Use Z-index.
-                                Table is Z-0, Players Z-10.
-                            */}
-                            <div className="relative flex flex-col items-center -mt-1 z-20 scale-75 md:scale-90 lg:scale-100">
-                                {/* Face Down */}
-                                <div className="flex space-x-2">
-                                    {p.faceDownCards.map((_, idx) => (
-                                        <div key={`fd-${idx}`}
-                                            draggable={isMe && gameState.status === 'playing' && isMyTurn}
-                                            onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
-                                            className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
-                                            <Card isHidden={true} small={true} className="shadow-md border border-slate-700" />
-                                        </div>
-                                    ))}
-                                </div>
-                                {/* Face Up (Overlay) */}
-                                <div className="flex space-x-2 -mt-10">
-                                    {p.faceUpCards.map((c, idx) => {
-                                        const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
-                                        return (
-                                            <div key={`fu-${idx}`}
-                                                draggable={isMe && gameState.status === 'playing'}
-                                                onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceUp')}
-                                                onDrop={(e) => { e.stopPropagation(); isMe && handleDrop(e, idx); }}
-                                                onDragOver={(e) => isMe && handleDragOver(e)}
-                                                onClick={() => {
-                                                    if (!isMe) return;
-                                                    // FaceUp click logic (similar to existing)
-                                                    if (gameState.status === 'preparing') setSelectedFaceUpIndex(idx === selectedFaceUpIndex ? null : idx);
-                                                    else if (gameState.status === 'playing' && isMyTurn && currentPlayer!.hand.length === 0) {
-                                                        setSelectedCardIndices(prev => prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]);
-                                                    }
-                                                }}
-                                                className={`relative transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
-                                                style={{ zIndex: 10 + idx }}
-                                            >
-                                                <Card card={c} small={true} className="shadow-lg" />
-                                                {/* Swap Drop Zone Highlight */}
-                                                {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded pointer-events-none" />}
+                            {/* --- CONTAINER 2: CARDS (Inside) --- */}
+                            <div className="absolute z-20 transition-all duration-500 w-[120px] md:w-[200px] flex flex-col items-center" style={cardStyle}>
+                                <div className="relative flex flex-col items-center -mt-1 scale-75 md:scale-90 lg:scale-100">
+                                    {(() => {
+                                        const FaceDownGroup = (cssClass: string) => (
+                                            <div className={`flex space-x-2 ${cssClass}`}>
+                                                {p.faceDownCards.map((_, idx) => (
+                                                    <div key={`fd-${idx}`}
+                                                        draggable={isMe && gameState.status === 'playing' && isMyTurn}
+                                                        onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
+                                                        className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
+                                                        <Card isHidden={true} small={true} className="shadow-md border border-slate-700" />
+                                                    </div>
+                                                ))}
                                             </div>
                                         );
-                                    })}
+
+                                        const FaceUpGroup = (cssClass: string) => (
+                                            <div className={`flex space-x-2 ${cssClass}`}>
+                                                {p.faceUpCards.map((c, idx) => {
+                                                    const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
+                                                    return (
+                                                        <div key={`fu-${idx}`}
+                                                            draggable={isMe && gameState.status === 'playing'}
+                                                            onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceUp')}
+                                                            onDrop={(e) => { e.stopPropagation(); isMe && handleDrop(e, idx); }}
+                                                            onDragOver={(e) => isMe && handleDragOver(e)}
+                                                            onClick={() => {
+                                                                if (!isMe) return;
+                                                                if (gameState.status === 'preparing') setSelectedFaceUpIndex(idx === selectedFaceUpIndex ? null : idx);
+                                                                else if (gameState.status === 'playing' && isMyTurn && currentPlayer!.hand.length === 0) {
+                                                                    setSelectedCardIndices(prev => prev.includes(idx) ? prev.filter(x => x !== idx) : [...prev, idx]);
+                                                                }
+                                                            }}
+                                                            className={`relative transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
+                                                            style={{ zIndex: 10 + idx }}
+                                                        >
+                                                            <Card card={c} small={true} className="shadow-lg" />
+                                                            {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded pointer-events-none" />}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+
+                                        if (isMe) {
+                                            return (
+                                                <>
+                                                    {FaceUpGroup("z-20")}
+                                                    {FaceDownGroup("-mt-14 z-10")}
+                                                </>
+                                            );
+                                        } else {
+                                            return (
+                                                <>
+                                                    {FaceDownGroup("z-10")}
+                                                    {FaceUpGroup("-mt-14 z-20")}
+                                                </>
+                                            );
+                                        }
+                                    })()}
                                 </div>
                             </div>
-
-                        </div>
+                        </React.Fragment>
                     );
                 })}
 
@@ -387,7 +455,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* The Hand */}
-                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-2 pt-2 md:pb-4 md:pt-4 px-2 md:px-4">
+                <div className="pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-1 pt-1 md:pb-2 md:pt-2 px-2 md:px-4">
                     <div
                         key={`hand-container-${gameState.version}`}
                         className={`
