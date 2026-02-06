@@ -294,7 +294,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                             draggable={isMe && gameState.status === 'playing' && isMyTurn}
                                             onDragStart={(e) => isMe && handleDragStart(e, idx, 'faceDown')}
                                             className={`${isMe ? 'cursor-pointer hover:-translate-y-2' : ''} transition-transform`}>
-                                            <Card isHidden={true} small={!isMe} className="shadow-md border border-slate-700" />
+                                            <Card isHidden={true} small={true} className="shadow-md border border-slate-700" />
                                         </div>
                                     ))}
                                 </div>
@@ -318,7 +318,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                                 }}
                                                 className={`transition-transform duration-200 ${isMe ? 'hover:-translate-y-2 cursor-pointer' : ''} ${isMe && (selectedFaceUpIndex === idx || isSelected) ? 'ring-2 ring-yellow-400 -translate-y-4' : ''}`}
                                             >
-                                                <Card card={c} small={!isMe} className="shadow-lg" />
+                                                <Card card={c} small={true} className="shadow-lg" />
                                                 {/* Swap Drop Zone Highlight */}
                                                 {isMe && gameState.status === 'preparing' && <div className="absolute inset-0 hover:bg-yellow-400/30 rounded" />}
                                             </div>
@@ -392,8 +392,8 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         className={`
                             flex justify-center items-end 
                             w-full max-w-6xl mx-auto overflow-x-visible
-                            ${currentPlayer.hand.length > 8 ? '-space-x-8 md:-space-x-12' : '-space-x-4 md:-space-x-6'}
-                            hover:space-x-0 md:hover:space-x-1 transition-all duration-300 min-h-[140px]
+                            ${currentPlayer.hand.length > 8 ? '-space-x-6 md:-space-x-8' : '-space-x-3 md:-space-x-4'}
+                            hover:space-x-0 md:hover:space-x-1 transition-all duration-300 min-h-[100px]
                         `}>
                         {currentPlayer.hand.map((c, i) => {
                             const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
@@ -413,7 +413,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     {preparingSelected && selectedFaceUpIndex !== null && (
                                         <button onClick={(e) => { e.stopPropagation(); handleSwap(); }} className="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 rounded-full px-2 py-0.5 text-[10px] font-bold animate-bounce z-50">Tukar</button>
                                     )}
-                                    <Card card={c} className={`shadow-2xl rounded-lg w-24 h-36 md:w-32 md:h-48 border border-slate-400/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
+                                    <Card card={c} className={`shadow-2xl rounded-lg w-16 h-24 md:w-20 md:h-28 border border-slate-400/30 ${isSelected || preparingSelected ? 'ring-4 ring-yellow-400' : ''}`} />
                                 </div>
                             );
                         })}
