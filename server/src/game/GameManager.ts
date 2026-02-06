@@ -498,7 +498,8 @@ export class GameManager {
         game.message = `${currentPlayer.name} played ${cardsToPlay.length}x ${firstCard.rank}`;
 
         // Reset cardToBeat since player successfully played (will be set again if this is a Joker)
-        game.cardToBeat = null;
+        // Use undefined (not null) so next player uses normal validation against discard pile
+        game.cardToBeat = undefined;
 
         // --- REFILL HAND ---
         // Rule: Must maintain min 2 cards if deck available
@@ -626,7 +627,8 @@ export class GameManager {
         game.discardPile = [];
 
         // Reset cardToBeat when taking pile
-        game.cardToBeat = null;
+        // Use undefined so next player uses normal validation
+        game.cardToBeat = undefined;
 
         game.message = `${currentPlayer.name} took the pile`;
 
