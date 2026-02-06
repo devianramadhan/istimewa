@@ -223,70 +223,42 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     const total = gameState.players.length;
 
                     // --- POSITIONING LOGIC ---
-                    // Supports 2-7 players arranged around the table
-                    // relativeIndex 0 = current player (always at bottom)
-                    // Other players are arranged clockwise from player's perspective
+                    // Uses angle-based positioning for evenly-spaced players around the table
+                    // relativeIndex 0 = current player (always at bottom, angle 270°/south)
+                    // Other players are arranged clockwise with equal angular gaps
 
-                    // Position configurations for different player counts
-                    // Each position has: cardStyle (on table) and nameStyle (near edge)
-                    type Position = {
-                        card: React.CSSProperties;
-                        name: React.CSSProperties;
+                    const getEllipsePosition = (angle: number, radiusX: number, radiusY: number) => {
+                        // Convert angle to radians
+                        const rad = (angle * Math.PI) / 180;
+                        // Ellipse formula: x = centerX + radiusX * cos(angle), y = centerY + radiusY * sin(angle)
+                        // We use percentage values centered at 50%
+                        const x = 50 + radiusX * Math.cos(rad);
+                        const y = 50 + radiusY * Math.sin(rad);
+                        return { x, y };
                     };
 
-                    const getPositions = (totalPlayers: number): Position[] => {
-                        // Always: index 0 = bottom (current player)
-                        // Positions go clockwise: bottom -> left -> top-left -> top -> top-right -> right
+                    // Calculate angle for each player
+                    // Start at 270° (bottom/south) and go clockwise
+                    const anglePerPlayer = 360 / total;
+                    const baseAngle = 270; // Start from bottom
+                    const playerAngle = (baseAngle + relativeIndex * anglePerPlayer) % 360;
 
-                        const positions: Record<number, Position[]> = {
-                            2: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                            ],
-                            3: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '25%', left: '18%', transform: 'translate(-50%, 0)' }, name: { top: '8%', left: '10%', transform: 'translate(0, 0)' } },
-                                { card: { top: '25%', right: '18%', transform: 'translate(50%, 0)' }, name: { top: '8%', right: '10%', transform: 'translate(0, 0)' } },
-                            ],
-                            4: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '45%', left: '12%', transform: 'translate(0, -50%)' }, name: { top: '45%', left: '2%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '45%', right: '12%', transform: 'translate(0, -50%)' }, name: { top: '45%', right: '2%', transform: 'translate(0, -50%)' } },
-                            ],
-                            5: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '50%', left: '10%', transform: 'translate(0, -50%)' }, name: { top: '50%', left: '1%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '18%', left: '28%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '20%', transform: 'translate(0, 0)' } },
-                                { card: { top: '18%', right: '28%', transform: 'translate(50%, 0)' }, name: { top: '4%', right: '20%', transform: 'translate(0, 0)' } },
-                                { card: { top: '50%', right: '10%', transform: 'translate(0, -50%)' }, name: { top: '50%', right: '1%', transform: 'translate(0, -50%)' } },
-                            ],
-                            6: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '60%', left: '8%', transform: 'translate(0, -50%)' }, name: { top: '60%', left: '1%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '25%', left: '12%', transform: 'translate(0, 0)' }, name: { top: '8%', left: '8%', transform: 'translate(0, 0)' } },
-                                { card: { top: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '25%', right: '12%', transform: 'translate(0, 0)' }, name: { top: '8%', right: '8%', transform: 'translate(0, 0)' } },
-                                { card: { top: '60%', right: '8%', transform: 'translate(0, -50%)' }, name: { top: '60%', right: '1%', transform: 'translate(0, -50%)' } },
-                            ],
-                            7: [
-                                { card: { bottom: '18%', left: '50%', transform: 'translate(-50%, 0)' }, name: { bottom: '4%', left: '50%', transform: 'translate(-50%, 0)' } },
-                                { card: { top: '65%', left: '6%', transform: 'translate(0, -50%)' }, name: { top: '65%', left: '1%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '35%', left: '8%', transform: 'translate(0, -50%)' }, name: { top: '35%', left: '1%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '18%', left: '30%', transform: 'translate(-50%, 0)' }, name: { top: '4%', left: '22%', transform: 'translate(0, 0)' } },
-                                { card: { top: '18%', right: '30%', transform: 'translate(50%, 0)' }, name: { top: '4%', right: '22%', transform: 'translate(0, 0)' } },
-                                { card: { top: '35%', right: '8%', transform: 'translate(0, -50%)' }, name: { top: '35%', right: '1%', transform: 'translate(0, -50%)' } },
-                                { card: { top: '65%', right: '6%', transform: 'translate(0, -50%)' }, name: { top: '65%', right: '1%', transform: 'translate(0, -50%)' } },
-                            ],
-                        };
+                    // Card positions: inner ellipse (on the table)
+                    const cardPos = getEllipsePosition(playerAngle, 38, 32); // radiusX=38%, radiusY=32%
+                    // Name positions: outer ellipse (near edge)
+                    const namePos = getEllipsePosition(playerAngle, 46, 42); // radiusX=46%, radiusY=42%
 
-                        return positions[totalPlayers] || positions[2];
+                    const cardStyle: React.CSSProperties = {
+                        top: `${cardPos.y}%`,
+                        left: `${cardPos.x}%`,
+                        transform: 'translate(-50%, -50%)'
                     };
 
-                    const allPositions = getPositions(total);
-                    const position = allPositions[relativeIndex] || allPositions[0];
-                    const cardStyle = position.card;
-                    const nameStyle = position.name;
+                    const nameStyle: React.CSSProperties = {
+                        top: `${namePos.y}%`,
+                        left: `${namePos.x}%`,
+                        transform: 'translate(-50%, -50%)'
+                    };
 
                     return (
                         <React.Fragment key={p.id}>
