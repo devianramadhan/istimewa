@@ -557,27 +557,27 @@ export class GameManager {
 
             console.log(`[GameManager] Joker played! Players: ${game.players.length}, Direction: ${game.direction}`);
 
-            // Special rule for 2-player games: Joker reverses direction, 
-            // which means same player plays again
+            // GLOBAL LOGIC: Joker always references the card BEFORE the joker sequence for comparison
+            // Find the card before Joker to set as cardToBeat
+            let cardBeforeJoker: Card | null = null;
+            // Note: game.discardPile already has the just-played Joker.
+            // We scan backwards for first non-Joker.
+            for (let i = game.discardPile.length - 1; i >= 0; i--) {
+                const card = game.discardPile[i];
+                if (card.rank !== 'joker' && card.suit !== 'joker') {
+                    cardBeforeJoker = card;
+                    break;
+                }
+            }
+            game.cardToBeat = cardBeforeJoker;
+            console.log(`[GameManager] cardToBeat set to: ${cardBeforeJoker ? cardBeforeJoker.rank + cardBeforeJoker.suit : 'null (empty pile)'}`);
+
+            // Special rule for 2-player games: Joker reverses direction AND keeps turn (skipTurnAdvance)
             if (game.players.length === 2) {
                 console.log(`[GameManager] 2-player Joker! Setting skipTurnAdvance = true`);
                 game.message += ' (Joker - Main Lagi!)';
                 // In 2-player, reversing direction means the same player goes again
-                // The player must beat the card BEFORE the joker (if any)
                 skipTurnAdvance = true;
-
-                // Find the card before Joker to set as cardToBeat
-                // Look backwards in discard pile for a non-Joker card
-                let cardBeforeJoker: Card | null = null;
-                for (let i = game.discardPile.length - 1; i >= 0; i--) {
-                    const card = game.discardPile[i];
-                    if (card.rank !== 'joker' && card.suit !== 'joker') {
-                        cardBeforeJoker = card;
-                        break;
-                    }
-                }
-                game.cardToBeat = cardBeforeJoker;
-                console.log(`[GameManager] cardToBeat set to: ${cardBeforeJoker ? cardBeforeJoker.rank + cardBeforeJoker.suit : 'null (empty pile)'}`);
             } else {
                 game.message += ' (Reverse)';
             }
