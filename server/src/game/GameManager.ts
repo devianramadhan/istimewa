@@ -463,19 +463,9 @@ export class GameManager {
             // Mark as valid for now, actual validation happens below
             isValid = true;
         }
-        // Normal Validation
-        else if (!effectiveTopCard) {
-            isValid = true;
-        }
-        else if (isSpecialCard(firstCard.rank)) {
-            isValid = true;
-        }
+        // Normal Validation (Use Helper)
         else {
-            if (effectiveTopCard.rank === '7') {
-                if (getCardValue(firstCard.rank) < 7) isValid = true;
-            } else {
-                if (getCardValue(firstCard.rank) >= getCardValue(effectiveTopCard.rank)) isValid = true;
-            }
+            isValid = this.isValidMove(firstCard, effectiveTopCard);
         }
 
         // For non-faceDown sources, reject invalid plays
@@ -486,18 +476,7 @@ export class GameManager {
         let blindPlayInvalid = false;
         if (source === 'faceDown') {
             // Check if the revealed card is actually valid
-            let actuallyValid = false;
-            if (!effectiveTopCard) {
-                actuallyValid = true;
-            } else if (isSpecialCard(firstCard.rank)) {
-                actuallyValid = true;
-            } else {
-                if (effectiveTopCard.rank === '7') {
-                    actuallyValid = getCardValue(firstCard.rank) < 7;
-                } else {
-                    actuallyValid = getCardValue(firstCard.rank) >= getCardValue(effectiveTopCard.rank);
-                }
-            }
+            let actuallyValid = this.isValidMove(firstCard, effectiveTopCard);
             if (!actuallyValid) {
                 blindPlayInvalid = true;
             }
