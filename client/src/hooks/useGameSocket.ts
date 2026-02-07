@@ -91,6 +91,12 @@ export function useGameSocket() {
         }
     }, [socket]);
 
+    const switchSeat = useCallback((roomId: string, targetSeatIndex: number) => {
+        if (socket) {
+            socket.emit('switch_seat', roomId, targetSeatIndex);
+        }
+    }, [socket]);
+
     return {
         socket,
         gameState,
@@ -111,7 +117,11 @@ export function useGameSocket() {
             setReady,
             takePile,
             playCard,
-            sortHand
+            sortHand,
+            switchSeat: (targetSeatIndex: number) => {
+                const roomId = gameState?.id;
+                if (roomId) switchSeat(roomId, targetSeatIndex);
+            }
         }
     };
 }

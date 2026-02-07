@@ -150,42 +150,23 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     // We need to pull `getSlotForPlayer` logic out or duplicate it simply.
     // Helper to get slot config for seat (Used in Effect and Render)
     const getSlotPosition = (seatIdx: number) => {
-        // Logic: Relative to Me (My Seat is always 0)
-        const mySeatIndex = currentPlayer?.seatIndex ?? 0;
-        // Calculate relative index: (seatIdx - mySeatIdx + MAX_PLAYERS) % MAX_PLAYERS
-        // Wait, the original logic was: targetSeatIndex = (mySeatIndex + i) % MAX_PLAYERS
-        // So i (relative) = (targetSeatIndex - mySeatIndex + MAX_PLAYERS) % MAX_PLAYERS
-        const relIdx = (seatIdx - mySeatIndex + MAX_PLAYERS) % MAX_PLAYERS;
+        // Fixed Seating: 1-to-1 map between Seat Index and Slot Layout.
+        // Using original coordinates from the initial design to maintain correct layout.
 
-        const getSlotForPlayer = (rIdx: number): number => {
-            if (rIdx === 0) return 0; // Main player always center bottom
-            // Distribution patterns
-            // For MAX_PLAYERS (10)
-            const distributions: Record<number, number[]> = {
-                6: [0, 4, 6, 5, 9, 1],
-                10: [0, 2, 4, 8, 6, 5, 7, 9, 3, 1], // Clockwise Full House
-            };
-            const pattern = distributions[10];
-            return pattern[rIdx] ?? 0;
-        };
-
-        const slotIndex = getSlotForPlayer(relIdx);
-
-        // Define Slots
         const slots = [
-            { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
-            { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
-            { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
-            { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
-            { card: { top: '50%', left: '87%' }, name: { top: '50%', left: '96%' }, rotation: 270 },           // 4: Right Center
-            { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
-            { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
-            { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Top Left
-            { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 8: Top Right
-            { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 9: Left Center
+            { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Kursi 1 (Bottom R-Center)
+            { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Kursi 2 (Bottom L-Center)
+            { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Kursi 3 (Bottom Right Corner)
+            { card: { top: '50%', left: '87%' }, name: { top: '50%', left: '96%' }, rotation: 270 },           // 3: Kursi 4 (Right Center)
+            { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 4: Kursi 5 (Top Right)
+            { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 5: Kursi 6 (Top R-Center)
+            { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 6: Kursi 7 (Top L-Center)
+            { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Kursi 8 (Top Left)
+            { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 8: Kursi 9 (Left Center)
+            { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 9: Kursi 10 (Bottom Left Corner)
         ];
 
-        return slots[slotIndex];
+        return slots[seatIdx % slots.length];
     };
 
     // --- RENDER HELPERS ---
@@ -420,14 +401,10 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* PLAYERS (Seats) */}
-                {Array.from({ length: MAX_PLAYERS }).map((_, i) => {
-                    // Logic: Relative to Me (My Seat is always 0)
-                    const mySeatIndex = currentPlayer.seatIndex;
-                    const targetSeatIndex = (mySeatIndex + i) % MAX_PLAYERS;
-
+                {Array.from({ length: MAX_PLAYERS }).map((_, targetSeatIndex) => {
                     const p = gameState.players.find(p => p.seatIndex === targetSeatIndex);
 
-                    // Use common helper
+                    // Use common helper (now absolute)
                     const slot = getSlotPosition(targetSeatIndex);
                     let cardStyle: React.CSSProperties = {
                         ...slot.card,
@@ -452,10 +429,15 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     if (actions.switchSeat) actions.switchSeat(targetSeatIndex);
                                 }}
                             >
-                                <div className="text-white/30 group-hover:text-yellow-400 text-xs text-center font-bold">
-                                    Kursi {targetSeatIndex + 1}
-                                    <br />
-                                    (Kosong)
+                                <div className="text-white/30 group-hover:text-yellow-400 text-xs text-center font-bold flex flex-col items-center gap-1">
+                                    <span className="opacity-100 group-hover:opacity-0 transition-opacity">
+                                        Kursi {targetSeatIndex + 1}
+                                        <br />
+                                        (Kosong)
+                                    </span>
+                                    <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs">
+                                        PIKIR LAGI?<br />PINDAH KE SINI
+                                    </span>
                                 </div>
                             </div>
                         );
