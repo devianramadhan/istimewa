@@ -71,7 +71,7 @@ export const Table: React.FC<TableProps> = ({ discardPile, deckCount, onDrawCard
                         <div className="absolute inset-0 z-20 rounded-lg border-2 border-transparent hover:border-yellow-400 pointer-events-none transition-colors" />
                     )}
                 </div>
-                <span className="text-slate-400 text-[10px] md:text-xs font-medium">Buangan ({discardPile.length})</span>
+                <span className="text-slate-400 text-[10px] md:text-xs font-medium">Pile ({discardPile.length})</span>
             </div>
         </div>
     );

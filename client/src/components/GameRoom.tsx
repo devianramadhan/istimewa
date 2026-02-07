@@ -620,28 +620,28 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             }
                             handleExecutePlay(source);
                         }} className="bg-green-600 hover:bg-green-700 text-white backdrop-blur-md px-8 py-2 rounded-full text-sm font-bold shadow-lg animate-bounce">
-                            🔝 Mainkan {selectedCardIndices.length} Kartu
+                            🔝 Play {selectedCardIndices.length} Cards
                         </button>
                     )}
 
                     {/* Take Pile */}
                     {gameState.status === 'playing' && isMyTurn && gameState.discardPile.length > 0 && (
                         <button onClick={onTakePile} className="bg-red-800 hover:bg-red-700 text-white backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                            🫴🏻 Ambil
+                            🫴🏻 Take
                         </button>
                     )}
 
                     {/* Ready Button (Preparing) */}
                     {gameState.status === 'preparing' && !currentPlayer.isReady && (
                         <button onClick={onSetReady} className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/10 px-8 py-2 rounded-full text-sm font-bold shadow-lg transition-all">
-                            ✅ Siap
+                            ✅ Ready
                         </button>
                     )}
 
                     {/* Sort Button */}
                     {currentPlayer.hand.length > 1 && (
                         <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white backdrop-blur-md px-8 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
-                            🔃 Urutkan
+                            🔃 Sort
                         </button>
                     )}
                 </div>
