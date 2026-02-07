@@ -461,7 +461,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                 `}>
                                     <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
-                                            {isMe ? 'You' : (p.name === 'Computer (Bot)' ? 'Bot' : p.name)} <span className="text-xs md:text-sm text-grey truncate">({p.hand.length})</span>
+                                            {isMe ? <span className="text-xs md:text-sm text-red-500 truncate">You</span> : (p.name === 'Computer (Bot)' ? 'Bot' : p.name)} <span className="text-xs md:text-sm text-grey truncate">({p.hand.length})</span>
                                         </div>
                                         {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
                                     </div>
