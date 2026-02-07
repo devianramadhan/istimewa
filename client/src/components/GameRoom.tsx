@@ -77,22 +77,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
     if (!currentPlayer) return <div className="text-white">Loading player data...</div>;
 
-    if (gameState.winner) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full space-y-6 animate-fade-in bg-black/80 z-50 fixed inset-0">
-                <h2 className="text-5xl font-bold text-yellow-400 drop-shadow-lg">Game Selesai!</h2>
-                <div className="text-2xl text-white">
-                    Pemenangnya adalah: <span className="font-bold text-blue-400">{gameState.players.find(p => p.id === gameState.winner)?.name}</span>
-                </div>
-                <button
-                    onClick={() => window.location.reload()}
-                    className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Main Lagi
-                </button>
-            </div>
-        );
-    }
+
 
     const handleSwap = () => {
         if (selectedHandIndex !== null && selectedFaceUpIndex !== null) {
