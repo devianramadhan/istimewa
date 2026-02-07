@@ -957,6 +957,9 @@ export class GameManager {
         // Joker on Discard Pile = RESET (Next player can play anything)
         if (topCard.rank === 'joker') return true;
 
+        // Card 2 on Discard Pile = RESET (Next player can play anything)
+        if (topCard.rank === '2') return true;
+
         // Check card 7 rule (Only applies if played card is NOT special)
         // When top card is 7, next player must play card < 7
         if (topCard.rank === '7') {
