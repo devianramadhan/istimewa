@@ -514,7 +514,8 @@ export class GameManager {
         if (isPlayingLastCards && isDeckEmpty && isSpecialCard(firstCard.rank)) {
             // Exception: 2 Face Up and 2 Face Down are safe. But the rule says "Logic ... tidak berlaku untuk ... kartu terbuka/tertutup, selama kartu tidak berada di tangan".
             // So this ONLY applies to Hand.
-            // triggerEndGamePenalty = true;  <-- DISABLED PER USER REQUEST (Allow valid finish with special cards)
+            console.log(`[GameManager] End Game Penalty Triggered for ${currentPlayer.name} (creating pile pickup)`);
+            triggerEndGamePenalty = true;
         }
 
         // --- EXECUTE PLAY ---
