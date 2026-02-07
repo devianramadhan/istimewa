@@ -238,22 +238,22 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     const slots: Slot[] = [
                         // Bottom row (4 slots) - 0°
                         // Spaced: 20%, 40%, 60%, 80%
-                        { card: { bottom: '12%', left: '60%' }, name: { bottom: '0%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
-                        { card: { bottom: '12%', left: '40%' }, name: { bottom: '0%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
-                        { card: { bottom: '12%', left: '80%' }, name: { bottom: '0%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
-                        { card: { bottom: '12%', left: '20%' }, name: { bottom: '0%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
+                        { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
+                        { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
+                        { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
+                        { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
 
                         // Right column (1 slot) - 270°
-                        { card: { top: '50%', right: '-3%' }, name: { top: '50%', right: '-8%' }, rotation: 270 },        // 4: Right Center
+                        { card: { top: '50%', right: '1%' }, name: { top: '50%', right: '-8%' }, rotation: 270 },          // 4: Right Center
 
                         // Top row (4 slots) - 180°
-                        { card: { top: '12%', left: '40%' }, name: { top: '0%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
-                        { card: { top: '12%', left: '60%' }, name: { top: '0%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
-                        { card: { top: '12%', left: '20%' }, name: { top: '0%', left: '20%' }, rotation: 180 },           // 7: Top Left
-                        { card: { top: '12%', left: '80%' }, name: { top: '0%', left: '80%' }, rotation: 180 },           // 8: Top Right
+                        { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
+                        { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
+                        { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Top Left
+                        { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 8: Top Right
 
                         // Left column (1 slot) - 90°
-                        { card: { top: '50%', left: '15%' }, name: { top: '50%', left: '8%' }, rotation: 90 },            // 9: Left Center
+                        { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 9: Left Center
                     ];
 
                     // Assign players to slots based on total count
@@ -391,15 +391,15 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                         if (isMe) {
                                             return (
                                                 <>
-                                                    {FaceUpGroup("z-20")}
-                                                    {FaceDownGroup("-mt-8 z-10")}
+                                                    {FaceUpGroup("z-40")}
+                                                    {FaceDownGroup("-mt-12 z-10")}
                                                 </>
                                             );
                                         } else {
                                             return (
                                                 <>
                                                     {FaceDownGroup("z-10")}
-                                                    {FaceUpGroup("-mt-8 z-20")}
+                                                    {FaceUpGroup("-mt-12 z-20")}
                                                 </>
                                             );
                                         }
