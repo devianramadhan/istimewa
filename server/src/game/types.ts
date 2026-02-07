@@ -30,7 +30,8 @@ export interface GameState {
     direction: 1 | -1; // 1 = clockwise, -1 = counter-clockwise
     status: GameStatus;
     winner: string | null;
-    message?: string; // For game events (e.g. "Player played 7, next must play lower")
+    message: string; // For game events (e.g. "Player played 7, next must play lower")
+    logs: string[];
     version: number; // Increment on every update to force valid sync
     cardToBeat?: Card | null; // Card that must be beaten after Joker in 2-player game
 }

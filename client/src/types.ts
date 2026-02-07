@@ -29,7 +29,8 @@ export interface GameState {
     direction: 1 | -1;
     status: GameStatus;
     winner: string | null;
-    message?: string;
+    message: string;
+    logs: string[];
     version: number;
     cardToBeat?: Card | null;
 }

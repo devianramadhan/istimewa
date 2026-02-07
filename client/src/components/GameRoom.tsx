@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { GameState } from '../types';
 import { Table } from './Table';
 import { Card } from './Card';
@@ -17,12 +17,24 @@ interface GameRoomProps {
 export const GameRoom: React.FC<GameRoomProps> = ({
     gameState,
     playerId,
+    onDrawCard,
     onPlayCard,
     onSwapCards,
     onSetReady,
     onTakePile,
     actions
 }) => {
+    // Scroll ref for logs
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll logs
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [gameState.logs]);
+
+
     const currentPlayer = gameState.players.find(p => p.id === playerId);
     const isMyTurn = gameState.players[gameState.currentPlayerIndex]?.id === playerId;
 
@@ -183,9 +195,20 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* Game Status */}
-                <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-right">
-                    <div className={`font-bold ${isMyTurn ? 'text-green-400' : 'text-slate-200'}`}>
-                        {gameState.status === 'preparing' ? 'Waiting...' : isMyTurn ? 'YOUR TURN' : `${gameState.players[gameState.currentPlayerIndex]?.name}'s Turn`}
+                {/* Game Status & Logs */}
+                <div className="flex flex-col items-end gap-2 max-w-[200px] md:max-w-[300px]">
+                    <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 text-right w-full">
+                        <div className={`font-bold ${isMyTurn ? 'text-green-400' : 'text-slate-200'}`}>
+                            {gameState.status === 'preparing' ? 'Waiting...' : isMyTurn ? 'YOUR TURN' : `${gameState.players[gameState.currentPlayerIndex]?.name}'s Turn`}
+                        </div>
+                    </div>
+
+                    {/* Game Log */}
+                    <div className="bg-black/20 backdrop-blur-sm p-2 rounded-lg border border-white/5 w-full h-32 overflow-y-auto text-[10px] md:text-xs text-slate-300 font-mono scrollbar-hide">
+                        {gameState.logs && gameState.logs.map((log, i) => (
+                            <div key={i} className="mb-1 border-b border-white/5 pb-0.5 last:border-0">{log}</div>
+                        ))}
+                        <div ref={messagesEndRef} />
                     </div>
                 </div>
             </div>
@@ -307,7 +330,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                 `}>
                                     <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
-                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name}
+                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name} <span className="text-gray-400 text-[10px]">({p.hand.length + p.faceDownCards.length})</span>
                                         </div>
                                         {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
                                     </div>

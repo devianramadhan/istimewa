@@ -15,6 +15,7 @@ export class GameManager {
             status: 'waiting',
             winner: null,
             message: 'Waiting for players...',
+            logs: [],
             version: 0
         };
         this.games.set(roomId, newGame);
@@ -371,7 +372,10 @@ export class GameManager {
         }
     }
 
+
+
     private startPlayingPhase(game: GameState) {
+        game.version++;
         game.status = 'playing';
         game.message = `Game Started! ${game.players[game.currentPlayerIndex].name}'s turn.`;
 
