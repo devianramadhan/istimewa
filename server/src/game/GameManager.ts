@@ -927,7 +927,7 @@ export class GameManager {
     // Add Listener Support
     public onGameUpdate: ((roomId: string) => void) | null = null;
 
-    private triggerUpdate(roomId: string) {
+    public triggerUpdate(roomId: string) {
         const game = this.games.get(roomId);
         if (game) {
             // Push current message to logs if different from last log

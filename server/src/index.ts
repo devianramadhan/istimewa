@@ -34,7 +34,7 @@ io.on('connection', (socket) => {
         const success = gameManager.addPlayer(roomId, socket.id, playerName);
         if (success) {
             socket.join(roomId);
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
@@ -42,7 +42,7 @@ io.on('connection', (socket) => {
         const success = gameManager.addPlayer(roomId, socket.id, playerName);
         if (success) {
             socket.join(roomId);
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         } else {
             socket.emit('error', 'Cannot join room');
         }
@@ -64,7 +64,7 @@ io.on('connection', (socket) => {
                 gameManager.addBot(roomId, i + 1); // Pass bot number for naming
             }
             socket.join(roomId);
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         } else {
             socket.emit('error', 'Cannot create bot game');
         }
@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
     socket.on('swap_cards', (roomId: string, handIndex: number, faceUpIndex: number) => {
         const success = gameManager.swapCards(roomId, socket.id, handIndex, faceUpIndex);
         if (success) {
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
         const success = gameManager.sortHand(roomId, socket.id);
         if (success) {
             console.log(`[Socket] Sort successful, emitting update`);
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         } else {
             console.log(`[Socket] Sort failed (game/player not found or other error)`);
         }
@@ -93,14 +93,14 @@ io.on('connection', (socket) => {
     socket.on('set_ready', (roomId: string) => {
         const success = gameManager.setPlayerReady(roomId, socket.id);
         if (success) {
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
     socket.on('take_pile', (roomId: string) => {
         const success = gameManager.takePile(roomId, socket.id);
         if (success) {
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
@@ -109,7 +109,7 @@ io.on('connection', (socket) => {
         const indices = Array.isArray(cardIndices) ? cardIndices : [cardIndices];
         const success = gameManager.playCard(roomId, socket.id, indices, source);
         if (success) {
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
@@ -124,23 +124,12 @@ io.on('connection', (socket) => {
     socket.on('start_game', (roomId: string) => {
         const success = gameManager.startGame(roomId, socket.id);
         if (success) {
-            io.to(roomId).emit('game_update', gameManager.getGame(roomId));
+            gameManager.triggerUpdate(roomId);
         }
     });
 
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
-        // Find which room this socket was in. 
-        // Ideally we track socket->room mapping, or iterate games. 
-        // For this scale, iterating is fine or map.
-        // But GameManager stores Games. It doesn't map socket->room easily.
-        // OPTION: We can iterate all games to find player.
-
-        // Efficient way: store in socket data? or distinct map.
-        // Let's iterate for now since limited rooms.
-        // Actually, we can expose a helper in GameManager 'handleSocketDisconnect(socketId)'
-
-        // Let's add that helper to GameManager instead of exposing logic here.
         gameManager.handleSocketDisconnect(socket.id);
     });
 });
