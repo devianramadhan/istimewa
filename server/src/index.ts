@@ -71,6 +71,13 @@ io.on('connection', (socket) => {
     });
 
 
+    socket.on('switch_seat', (roomId: string, targetSeatIndex: number) => {
+        const success = gameManager.switchSeat(roomId, socket.id, targetSeatIndex);
+        if (success) {
+            gameManager.triggerUpdate(roomId);
+        }
+    });
+
 
     socket.on('swap_cards', (roomId: string, handIndex: number, faceUpIndex: number) => {
         const success = gameManager.swapCards(roomId, socket.id, handIndex, faceUpIndex);

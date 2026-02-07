@@ -1,3 +1,6 @@
+// Constants
+export const MAX_PLAYERS = 6;
+
 export type Suit = 'hearts' | 'diamonds' | 'clubs' | 'spades' | 'joker';
 export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A' | 'joker';
 
@@ -16,6 +19,7 @@ export interface Player {
     hasSwapped: boolean;
     isBot?: boolean;
     finishedRank?: number; // 1st, 2nd, etc.
+    seatIndex: number;
 }
 
 export type GameStatus = 'waiting' | 'preparing' | 'playing' | 'finished';

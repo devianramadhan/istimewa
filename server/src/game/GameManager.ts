@@ -1,4 +1,4 @@
-import { GameState, Player, Card, Suit, Rank } from './types';
+import { GameState, Player, Card, Suit, Rank, MAX_PLAYERS } from './types';
 import { getCardValue, isSpecialCard } from './utils';
 
 export class GameManager {
@@ -67,6 +67,18 @@ export class GameManager {
 
         if (game.status !== 'waiting') return false; // Cannot join if game started
 
+        // Assign Seat
+        const occupiedSeats = game.players.map(p => p.seatIndex);
+        let seatIndex = -1;
+        for (let i = 0; i < MAX_PLAYERS; i++) {
+            if (!occupiedSeats.includes(i)) {
+                seatIndex = i;
+                break;
+            }
+        }
+
+        if (seatIndex === -1) return false; // Room full
+
         const newPlayer: Player = {
             id: playerId,
             name,
@@ -75,9 +87,13 @@ export class GameManager {
             faceDownCards: [],
             isReady: false,
             hasSwapped: false,
-            connected: true
+            connected: true,
+            seatIndex: seatIndex
         };
         game.players.push(newPlayer);
+        // Sort by seatIndex to maintain order
+        game.players.sort((a, b) => a.seatIndex - b.seatIndex);
+
         return true;
     }
 
@@ -684,6 +700,18 @@ export class GameManager {
         const game = this.games.get(roomId);
         if (!game) return false;
 
+        // Assign Seat for Bot
+        const occupiedSeats = game.players.map(p => p.seatIndex);
+        let seatIndex = -1;
+        for (let i = 0; i < MAX_PLAYERS; i++) {
+            if (!occupiedSeats.includes(i)) {
+                seatIndex = i;
+                break;
+            }
+        }
+
+        if (seatIndex === -1) return false;
+
         const botId = `bot-${Date.now()}-${botNumber}`;
         const botName = botNumber === 1 ? 'Bot' : `Bot ${botNumber}`;
         const newPlayer: Player = {
@@ -694,9 +722,12 @@ export class GameManager {
             faceDownCards: [],
             isReady: true, // Bots are always ready!
             hasSwapped: true, // Bots don't swap
-            isBot: true
+            isBot: true,
+            seatIndex: seatIndex
         };
         game.players.push(newPlayer);
+        game.players.sort((a, b) => a.seatIndex - b.seatIndex);
+
         return true;
     }
 
@@ -922,6 +953,33 @@ export class GameManager {
                 }
             }
         }, 1500);
+    }
+
+    // Switch Seat (Only in prepping)
+    switchSeat(roomId: string, playerId: string, targetSeatIndex: number): boolean {
+        const game = this.games.get(roomId);
+        if (!game) return false;
+
+        if (game.status !== 'waiting' && game.status !== 'preparing') return false;
+
+        // Target valid?
+        if (targetSeatIndex < 0 || targetSeatIndex >= MAX_PLAYERS) return false;
+
+        // Target empty?
+        const isOccupied = game.players.some(p => p.seatIndex === targetSeatIndex);
+        if (isOccupied) return false;
+
+        const player = game.players.find(p => p.id === playerId);
+        if (!player) return false;
+
+        // Perform Switch
+        player.seatIndex = targetSeatIndex;
+
+        // Resort
+        game.players.sort((a, b) => a.seatIndex - b.seatIndex);
+
+        this.triggerUpdate(roomId);
+        return true;
     }
 
     // Add Listener Support

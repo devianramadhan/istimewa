@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { GameState } from '../types';
+import { MAX_PLAYERS } from '../types';
 import { Table } from './Table';
 import { Card } from './Card';
 
@@ -59,6 +60,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
     // Logs Modal State
     const [showLogs, setShowLogs] = useState(false);
+
+    // Copy Tooltip State
+    const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
 
     // Effect to trigger celebration for 2 seconds when rank is assigned
     React.useEffect(() => {
@@ -195,6 +199,30 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
                     <span className="text-xs text-slate-400 uppercase">Room</span>
                     <span className="font-mono font-bold text-yellow-500">{gameState.id}</span>
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(gameState.id);
+                            setShowCopiedTooltip(true);
+                            setTimeout(() => setShowCopiedTooltip(false), 2000);
+                        }}
+                        className="ml-2 p-1.5 hover:bg-white/10 rounded-lg transition-colors relative group"
+                        title="Salin Room ID"
+                    >
+                        {showCopiedTooltip ? (
+                            <span className="text-green-400 text-xs font-bold">✓</span>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-white">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        )}
+
+                        {showCopiedTooltip && (
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-green-600 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-50">
+                                Disalin!
+                            </div>
+                        )}
+                    </button>
                 </div>
 
                 {/* Game Status */}
@@ -239,89 +267,81 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
 
                 {/* PLAYERS (Seats) */}
-                {gameState.players.map((p, i) => {
-                    const isMe = p.id === playerId;
-                    const myIndex = gameState.players.findIndex(p => p.id === playerId);
-                    const relativeIndex = (i - myIndex + gameState.players.length) % gameState.players.length;
-                    const total = gameState.players.length;
+                {Array.from({ length: MAX_PLAYERS }).map((_, i) => {
+                    // Logic: Relative to Me (My Seat is always 0)
+                    const mySeatIndex = currentPlayer.seatIndex;
+                    const targetSeatIndex = (mySeatIndex + i) % MAX_PLAYERS;
 
-                    // --- RECTANGULAR TABLE POSITIONING ---
-                    // Table layout: 3 bottom, 2 right, 3 top, 2 left = 10 max players
-                    // Main player (relativeIndex 0) is FIXED at center bottom
-                    // Cards face center with horizontal/vertical rotation only
+                    const p = gameState.players.find(p => p.seatIndex === targetSeatIndex);
 
-                    type Slot = {
-                        card: React.CSSProperties;
-                        name: React.CSSProperties;
-                        rotation: number;
+                    // Slot Positioning
+                    // Use 'i' as relative index (0 = Me, 1 = Right, etc.)
+                    const getSlotForPlayer = (relIdx: number): number => {
+                        if (relIdx === 0) return 0; // Main player always center bottom
+
+                        // Distribution patterns
+                        // For MAX_PLAYERS (6)
+                        const distributions: Record<number, number[]> = {
+                            6: [0, 4, 6, 5, 9, 1], // Bottom, Right, TopR, TopL, Left, BottomL
+                        };
+                        const pattern = distributions[6];
+                        return pattern[relIdx] ?? 0;
                     };
 
-                    // Positions are calculated for even distribution with proper spacing
-                    // Cards positioned at table edges but inside the table boundary
-                    const slots: Slot[] = [
-                        // Bottom row (4 slots) - 0°
-                        // Spaced: 20%, 40%, 60%, 80%
+                    const slotIndex = getSlotForPlayer(i);
+
+                    // Define Slots (Same as before but simplified access)
+                    const slots = [
                         { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
                         { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
                         { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
                         { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
-
-                        // Right column (1 slot) - 270°
                         { card: { top: '50%', right: '1%' }, name: { top: '50%', right: '-8%' }, rotation: 270 },          // 4: Right Center
-
-                        // Top row (4 slots) - 180°
                         { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
                         { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
                         { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Top Left
                         { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 8: Top Right
-
-                        // Left column (1 slot) - 90°
                         { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 9: Left Center
                     ];
 
-                    // Assign players to slots based on total count
-                    const getSlotForPlayer = (relIdx: number, totalPlayers: number): number => {
-                        if (relIdx === 0) return 0; // Main player always center bottom
-
-                        // Distribution patterns for different player counts
-                        // Ordered CLOCKWISE to ensure sequential turns match visual direction
-                        const distributions: Record<number, number[]> = {
-                            2: [0, 6],                                    // Bottom, Top
-                            3: [0, 4, 9],                                 // Bottom, Right, Left
-                            4: [0, 4, 6, 9],                              // Bottom, Right, Top, Left
-                            5: [0, 6, 5, 9, 1],                           // Clockwise: Base -> TopR -> TopL -> Left -> BaseL
-                            6: [0, 4, 6, 5, 9, 1],                        // Clockwise
-                            7: [0, 2, 4, 6, 5, 9, 1],                     // Clockwise
-                            8: [0, 2, 4, 8, 6, 5, 9, 1],                  // Clockwise
-                            9: [0, 2, 8, 6, 5, 7, 9, 3, 1],               // Clockwise
-                            10: [0, 2, 4, 8, 6, 5, 7, 9, 3, 1],           // Clockwise Full House
-                        };
-
-                        const pattern = distributions[totalPlayers] || distributions[10];
-                        return pattern[relIdx] ?? 0;
-                    };
-
-                    const slotIndex = getSlotForPlayer(relativeIndex, total);
                     const slot = slots[slotIndex];
-
                     let cardStyle: React.CSSProperties = {
                         ...slot.card,
                         transform: `translate(-50%, ${slot.card.top ? '-50%' : '0'})${slot.rotation !== 0 ? ` rotate(${slot.rotation}deg)` : ''}`
                     };
+                    let nameStyle: React.CSSProperties = { ...slot.name, transform: 'translate(-50%, 0)' };
 
-                    // Main player doesn't rotate
-                    if (relativeIndex === 0) {
-                        cardStyle = { ...slot.card, transform: 'translate(-50%, 0)' };
-                        // Center main player if total <= 4 (using single bottom slot)
-                        if (total <= 4) {
-                            cardStyle.left = '50%';
-                        }
+                    // Center main player styling adjusted
+                    if (i === 0) {
+                        cardStyle = { ...slot.card, transform: 'translate(-50%, 0)', left: '50%' };
+                        nameStyle = { ...slot.name, transform: 'translate(-50%, 0)', left: '50%' };
                     }
 
-                    const nameStyle: React.CSSProperties = { ...slot.name, transform: 'translate(-50%, 0)' };
-                    if (relativeIndex === 0 && total <= 4) {
-                        nameStyle.left = '50%';
+                    // --- EMPTY SLOT RENDERING ---
+                    if (!p) {
+                        // Only show empty slots in Preparing/Waiting phase
+                        if (gameState.status !== 'waiting' && gameState.status !== 'preparing') return null;
+
+                        return (
+                            <div key={`empty-${targetSeatIndex}`}
+                                className="absolute z-10 w-20 h-20 md:w-24 md:h-32 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/10 hover:border-yellow-400 transition-all group"
+                                style={cardStyle}
+                                onClick={() => {
+                                    // Call Switch Seat
+                                    if (actions.switchSeat) actions.switchSeat(targetSeatIndex);
+                                }}
+                            >
+                                <div className="text-white/30 group-hover:text-yellow-400 text-xs text-center font-bold">
+                                    Kursi {targetSeatIndex + 1}
+                                    <br />
+                                    (Kosong)
+                                </div>
+                            </div>
+                        );
                     }
+
+                    // --- PLAYER RENDERING (Existing Logic) ---
+                    const isMe = p.id === playerId;
 
                     return (
                         <React.Fragment key={p.id}>
@@ -329,7 +349,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             <div className="absolute z-30 transition-all duration-500 w-[120px] md:w-[200px] flex justify-center pointer-events-none" style={nameStyle}>
                                 <div className={`
                                     relative px-4 py-1.5 rounded-full border-2 shadow-lg backdrop-blur-md transition-all whitespace-nowrap
-                                    ${gameState.currentPlayerIndex === i && gameState.status === 'playing' ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
+                                    ${2 > 1 && gameState.status === 'playing' && gameState.players[gameState.currentPlayerIndex]?.id === p.id ? 'bg-yellow-600/90 border-yellow-400 scale-110 shadow-yellow-500/20' : 'bg-slate-900/80 border-slate-600'}
                                 `}>
                                     <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">

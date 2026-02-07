@@ -31,7 +31,8 @@ const mockPlayer: Player = {
     faceDownCards: [],
     isReady: true,
     hasSwapped: true,
-    connected: true
+    connected: true,
+    seatIndex: 0
 };
 
 mockGame.players.push(mockPlayer);
