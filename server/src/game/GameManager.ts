@@ -40,29 +40,24 @@ export class GameManager {
             return true;
         }
 
-        // Check for Reconnection (Same Name, Disconnected)
-        const rejoiningPlayer = game.players.find(p => p.name === name);
+        // Check for Reconnection (Same Name or converted to Bot)
+        const rejoiningPlayer = game.players.find(p => p.name === name || p.name === `${name} (Bot)`);
         if (rejoiningPlayer) {
-            if (!rejoiningPlayer.connected) {
-                // RECONNECT SUCCESS
-                console.log(`[GameManager] Player ${name} reconnected to ${roomId}`);
+            // Re-assign ID and Reset Status
+            rejoiningPlayer.id = playerId;
+            rejoiningPlayer.connected = true;
+            rejoiningPlayer.name = name; // Restore clean name if it was set to Bot
+            rejoiningPlayer.isBot = false; // Convert back to Human if it was a bot
 
-                // Update ID to new socket
-                rejoiningPlayer.id = playerId;
-                rejoiningPlayer.connected = true;
-
-                // Clear Timeout
-                const timeoutKey = `${roomId}-${name}`;
-                if (this.disconnectTimeouts.has(timeoutKey)) {
-                    clearTimeout(this.disconnectTimeouts.get(timeoutKey));
-                    this.disconnectTimeouts.delete(timeoutKey);
-                }
-
-                return true;
-            } else {
-                // Name taken and currently connected
-                return false;
+            // Clear Timeout
+            const timeoutKey = `${roomId}-${name}`;
+            if (this.disconnectTimeouts.has(timeoutKey)) {
+                clearTimeout(this.disconnectTimeouts.get(timeoutKey));
+                this.disconnectTimeouts.delete(timeoutKey);
             }
+
+            console.log(`[GameManager] Player ${name} resumed session in ${roomId}`);
+            return true;
         }
 
         if (game.status !== 'waiting') return false; // Cannot join if game started
@@ -114,7 +109,7 @@ export class GameManager {
 
         const timeout = setTimeout(() => {
             this.convertPlayerToBot(roomId, player.name);
-        }, 10000); // 10 seconds
+        }, 60000); // 1 minute
 
         this.disconnectTimeouts.set(timeoutKey, timeout);
 

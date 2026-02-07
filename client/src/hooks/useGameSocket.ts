@@ -20,6 +20,14 @@ export function useGameSocket() {
             setIsConnected(true);
             setPlayerId(newSocket.id || null);
             setError(null);
+
+            // AUTO REJOIN LOGIC
+            const savedRoomId = localStorage.getItem('istimewa_roomId');
+            const savedPlayerName = localStorage.getItem('istimewa_playerName');
+            if (savedRoomId && savedPlayerName) {
+                console.log(`[Socket] Attempting auto-rejoin to ${savedRoomId} as ${savedPlayerName}`);
+                newSocket.emit('join_room', savedRoomId, savedPlayerName);
+            }
         });
 
         newSocket.on('disconnect', () => {
@@ -57,12 +65,16 @@ export function useGameSocket() {
 
     const createRoom = useCallback((roomId: string, playerName: string) => {
         if (socket) {
+            localStorage.setItem('istimewa_roomId', roomId);
+            localStorage.setItem('istimewa_playerName', playerName);
             socket.emit('create_room', roomId, playerName);
         }
     }, [socket]);
 
     const joinRoom = useCallback((roomId: string, playerName: string) => {
         if (socket) {
+            localStorage.setItem('istimewa_roomId', roomId);
+            localStorage.setItem('istimewa_playerName', playerName);
             socket.emit('join_room', roomId, playerName);
         }
     }, [socket]);
@@ -108,9 +120,16 @@ export function useGameSocket() {
             joinRoom,
             joinBotGame: (roomId: string, playerName: string, botCount: number = 1) => {
                 if (socket) {
+                    localStorage.setItem('istimewa_roomId', roomId);
+                    localStorage.setItem('istimewa_playerName', playerName);
                     socket.emit('join_bot_game', roomId, playerName, botCount);
                     setPlayerId(socket.id || null);
                 }
+            },
+            leaveRoom: () => {
+                localStorage.removeItem('istimewa_roomId');
+                localStorage.removeItem('istimewa_playerName');
+                setGameState(null);
             },
             startGame,
             swapCards,

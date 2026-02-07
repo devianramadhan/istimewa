@@ -429,14 +429,19 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                     if (actions.switchSeat) actions.switchSeat(targetSeatIndex);
                                 }}
                             >
-                                <div className="text-white/30 group-hover:text-yellow-400 text-xs text-center font-bold flex flex-col items-center gap-1">
+                                <div
+                                    className="text-white/30 group-hover:text-yellow-400 text-xs text-center font-bold flex flex-col items-center gap-1 transition-transform"
+                                    style={{ transform: `rotate(${-slot.rotation}deg)` }}
+                                >
                                     <span className="opacity-100 group-hover:opacity-0 transition-opacity">
                                         Kursi {targetSeatIndex + 1}
                                         <br />
                                         (Kosong)
                                     </span>
                                     <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-[10px] md:text-xs">
-                                        PIKIR LAGI?<br />PINDAH KE SINI
+                                        Kursi {targetSeatIndex + 1}
+                                        <br />
+                                        (Kosong)
                                     </span>
                                 </div>
                             </div>
