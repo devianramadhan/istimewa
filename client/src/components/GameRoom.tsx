@@ -228,7 +228,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     <Table
                         discardPile={gameState.discardPile}
                         deckCount={gameState.deck.length}
-                        onDrawCard={() => { }}
+                        onDrawCard={onDrawCard}
                         isCurrentPlayer={isMyTurn}
                         onDropCard={handlePlayDrop}
                         onDiscardPileClick={() => setShowDiscardPile(true)}

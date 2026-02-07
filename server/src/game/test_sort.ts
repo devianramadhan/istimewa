@@ -18,6 +18,7 @@ const mockGame: GameState = {
     status: 'playing',
     winner: null,
     message: '',
+    logs: [],
     version: 0
 };
 

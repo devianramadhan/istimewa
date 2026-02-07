@@ -928,6 +928,21 @@ export class GameManager {
     public onGameUpdate: ((roomId: string) => void) | null = null;
 
     private triggerUpdate(roomId: string) {
+        const game = this.games.get(roomId);
+        if (game) {
+            // Push current message to logs if different from last log
+            if (game.message && (game.logs.length === 0 || game.logs[game.logs.length - 1] !== game.message)) {
+                // Check if message is meaningful (not just "Waiting...")
+                if (!game.message.startsWith('Waiting')) {
+                    game.logs.push(game.message);
+                    console.log(`[GameManager][${roomId}] Logged: ${game.message}`);
+                    // Keep last 50 logs
+                    if (game.logs.length > 50) game.logs.shift();
+                }
+            }
+            game.version++;
+        }
+
         if (this.onGameUpdate) this.onGameUpdate(roomId);
     }
 

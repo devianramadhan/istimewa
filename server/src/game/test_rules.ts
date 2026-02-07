@@ -12,7 +12,7 @@ function createTestGame(numPlayers: number) {
         manager.addPlayer(roomId, `p${i}`, `Player ${i}`);
     }
 
-    manager.startGame(roomId);
+    manager.startGame(roomId, 'p0');
 
     for (let i = 0; i < numPlayers; i++) {
         manager.setPlayerReady(roomId, `p${i}`);
