@@ -164,8 +164,8 @@ export class GameManager {
                 }
             }
 
-            // Add 4 Jokers per deck (Total 8 for 2 decks)
-            for (let i = 0; i < 4; i++) {
+            // Add 2 Jokers per deck (Total 4 for 2 decks)
+            for (let i = 0; i < 2; i++) {
                 deck.push({ suit: 'joker', rank: 'joker' });
             }
         }
@@ -367,25 +367,34 @@ export class GameManager {
     }
 
     private dealInitialCards(game: GameState) {
-        // Deal 2 Face Down, 2 Face Up, 2 Hand to each player
-        // Total 6 cards per player
+        // Deal order: 
+        // 1. Face Down (1st)
+        // 2. Face Down (2nd)
+        // 3. Face Up (1st)
+        // 4. Face Up (2nd)
+        // 5. Hand (1st)
+        // 6. Hand (2nd)
 
-        for (const player of game.players) {
-            // 2 Face Down
-            for (let i = 0; i < 2; i++) {
-                if (game.deck.length > 0) player.faceDownCards.push(game.deck.pop()!);
-            }
+        // Randomize starting slot for dealing
+        const startIndex = Math.floor(Math.random() * game.players.length);
 
-            // 2 Face Up
-            for (let i = 0; i < 2; i++) {
-                if (game.deck.length > 0) player.faceUpCards.push(game.deck.pop()!);
+        const dealRound = (targetKey: 'faceDownCards' | 'faceUpCards' | 'hand') => {
+            for (let i = 0; i < game.players.length; i++) {
+                const playerIndex = (startIndex + i) % game.players.length;
+                const player = game.players[playerIndex];
+                if (game.deck.length > 0) {
+                    player[targetKey].push(game.deck.pop()!);
+                }
             }
+        };
 
-            // 2 Hand
-            for (let i = 0; i < 2; i++) {
-                if (game.deck.length > 0) player.hand.push(game.deck.pop()!);
-            }
-        }
+        // Execute the 6 rounds
+        dealRound('faceDownCards');
+        dealRound('faceDownCards');
+        dealRound('faceUpCards');
+        dealRound('faceUpCards');
+        dealRound('hand');
+        dealRound('hand');
     }
 
 

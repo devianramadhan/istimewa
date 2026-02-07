@@ -65,7 +65,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
 
     // Effect to trigger celebration for 2 seconds when rank is assigned
-    React.useEffect(() => {
+    useEffect(() => {
         if (currentPlayer?.finishedRank) {
             setShowCelebration(true);
             const timer = setTimeout(() => setShowCelebration(false), 2000);
@@ -73,6 +73,122 @@ export const GameRoom: React.FC<GameRoomProps> = ({
         }
     }, [currentPlayer?.finishedRank]);
 
+    // --- DEALING ANIMATION STATE ---
+    const [isDealing, setIsDealing] = useState(false);
+    // Counts of cards "received" by each player seat index (0-9)
+    const [dealtCardsCount, setDealtCardsCount] = useState<Record<number, { faceDown: number, faceUp: number, hand: number }>>({});
+
+
+    // Initial Deal Animation Trigger
+    useEffect(() => {
+        if (gameState.status === 'preparing' && !isDealing) {
+            // Check if we already dealt (to avoid re-running on refresh if we could persist, but for now re-run is okay-ish or we check if hand is empty?)
+            // Actually, if we refresh in 'preparing', we might want to skip animation or fast forward. 
+            // Lets check if we have tracked "dealt" state. For now, always run if just changed.
+            // A simple refinement: check if dealtCardsCount is empty.
+            if (Object.keys(dealtCardsCount).length > 0) return;
+
+            console.log("Starting Dealing Animation...");
+            setIsDealing(true);
+
+            // Initialize counts
+            const initialCounts: any = {};
+            for (let i = 0; i < MAX_PLAYERS; i++) initialCounts[i] = { faceDown: 0, faceUp: 0, hand: 0 };
+            setDealtCardsCount(initialCounts);
+
+            const totalPlayers = gameState.players.length;
+            const rounds = [
+                { type: 'faceDown', count: 1 },
+                { type: 'faceDown', count: 1 },
+                { type: 'faceUp', count: 1 },
+                { type: 'faceUp', count: 1 },
+                { type: 'hand', count: 1 },
+                { type: 'hand', count: 1 }
+            ];
+
+            // Random start index for animation visual (client side random is fine)
+            let startPlayerIndex = Math.floor(Math.random() * totalPlayers);
+
+            let delay = 0;
+            const DELAY_BETWEEN_CARDS = 100; // ms
+
+            rounds.forEach((round) => {
+                for (let i = 0; i < totalPlayers; i++) {
+                    const playerIdx = (startPlayerIndex + i) % totalPlayers;
+                    const player = gameState.players[playerIdx];
+
+                    // Scheduling the update
+                    setTimeout(() => {
+                        // Reveal logic
+                        setDealtCardsCount(prev => {
+                            const newCounts = { ...prev };
+                            if (!newCounts[player.seatIndex]) newCounts[player.seatIndex] = { faceDown: 0, faceUp: 0, hand: 0 };
+
+                            // Safe increment
+                            const currentVal = newCounts[player.seatIndex][round.type as 'faceDown' | 'faceUp' | 'hand'];
+                            newCounts[player.seatIndex] = {
+                                ...newCounts[player.seatIndex],
+                                [round.type]: currentVal + 1
+                            };
+                            return newCounts;
+                        });
+
+                    }, delay);
+
+                    delay += DELAY_BETWEEN_CARDS;
+                }
+            });
+
+            // End Animation
+            setTimeout(() => {
+                setIsDealing(false);
+            }, delay + 500);
+        }
+    }, [gameState.status, gameState.players.length]); // Dependencies
+
+    // Helper to get slot config for seat (Used in Effect and Render)
+    // We need to pull `getSlotForPlayer` logic out or duplicate it simply.
+    // Helper to get slot config for seat (Used in Effect and Render)
+    const getSlotPosition = (seatIdx: number) => {
+        // Logic: Relative to Me (My Seat is always 0)
+        const mySeatIndex = currentPlayer?.seatIndex ?? 0;
+        // Calculate relative index: (seatIdx - mySeatIdx + MAX_PLAYERS) % MAX_PLAYERS
+        // Wait, the original logic was: targetSeatIndex = (mySeatIndex + i) % MAX_PLAYERS
+        // So i (relative) = (targetSeatIndex - mySeatIndex + MAX_PLAYERS) % MAX_PLAYERS
+        const relIdx = (seatIdx - mySeatIndex + MAX_PLAYERS) % MAX_PLAYERS;
+
+        const getSlotForPlayer = (rIdx: number): number => {
+            if (rIdx === 0) return 0; // Main player always center bottom
+            // Distribution patterns
+            // For MAX_PLAYERS (10)
+            const distributions: Record<number, number[]> = {
+                6: [0, 4, 6, 5, 9, 1],
+                10: [0, 2, 4, 8, 6, 5, 7, 9, 3, 1], // Clockwise Full House
+            };
+            const pattern = distributions[10];
+            return pattern[rIdx] ?? 0;
+        };
+
+        const slotIndex = getSlotForPlayer(relIdx);
+
+        // Define Slots
+        const slots = [
+            { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
+            { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
+            { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
+            { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
+            { card: { top: '50%', left: '87%' }, name: { top: '50%', left: '96%' }, rotation: 270 },           // 4: Right Center
+            { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
+            { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
+            { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Top Left
+            { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 8: Top Right
+            { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 9: Left Center
+        ];
+
+        return slots[slotIndex];
+    };
+
+    // --- RENDER HELPERS ---
     const handleCardClick = (index: number, source: 'hand' | 'faceUp') => {
         if (gameState.status !== 'playing' || !isMyTurn || !currentPlayer) return;
 
@@ -199,30 +315,32 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-xl border border-white/10 flex items-center gap-3">
                     <span className="text-xs text-slate-400 uppercase">Room</span>
                     <span className="font-mono font-bold text-yellow-500">{gameState.id}</span>
-                    <button
-                        onClick={() => {
-                            navigator.clipboard.writeText(gameState.id);
-                            setShowCopiedTooltip(true);
-                            setTimeout(() => setShowCopiedTooltip(false), 2000);
-                        }}
-                        className="ml-2 p-1.5 hover:bg-white/10 rounded-lg transition-colors relative group"
-                        title="Salin Room ID"
-                    >
-                        {showCopiedTooltip ? (
-                            <span className="text-green-400 text-xs font-bold">✓</span>
-                        ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-white">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                            </svg>
-                        )}
+                    {!gameState.id.startsWith('BotRoom_') && (
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(gameState.id);
+                                setShowCopiedTooltip(true);
+                                setTimeout(() => setShowCopiedTooltip(false), 2000);
+                            }}
+                            className="ml-2 p-1.5 hover:bg-white/10 rounded-lg transition-colors relative group"
+                            title="Salin Room ID"
+                        >
+                            {showCopiedTooltip ? (
+                                <span className="text-green-400 text-xs font-bold">✓</span>
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-white">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            )}
 
-                        {showCopiedTooltip && (
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-green-600 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-50">
-                                Disalin!
-                            </div>
-                        )}
-                    </button>
+                            {showCopiedTooltip && (
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-green-600 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-50">
+                                    Disalin!
+                                </div>
+                            )}
+                        </button>
+                    )}
                 </div>
 
                 {/* Game Status */}
@@ -235,12 +353,47 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     </div>
 
                     {/* Log Button */}
-                    <button
-                        onClick={() => setShowLogs(true)}
-                        className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2 transition-colors"
-                    >
-                        <span>📜</span> Log Permainan
-                    </button>
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowLogs(!showLogs)}
+                            className={`bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg border flex items-center gap-2 transition-all ${showLogs ? 'border-yellow-500 text-white' : 'border-white/10'}`}
+                        >
+                            <span>📜</span> Log
+                        </button>
+
+                        {/* Logs Panel (Floating) */}
+                        {showLogs && (
+                            <div className="absolute top-full right-0 mt-2 z-[100] w-[280px] md:w-[350px] bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                {/* Header */}
+                                <div className="flex items-center justify-between p-3 border-b border-white/10 bg-black/20">
+                                    <span className="text-xs font-bold text-slate-400 flex items-center gap-2">
+                                        CATATAN PERMAINAN
+                                    </span>
+                                    <button
+                                        onClick={() => setShowLogs(false)}
+                                        className="text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+
+                                {/* Content (Fixed Height) */}
+                                <div className="h-[250px] overflow-y-auto p-3 space-y-2 font-mono text-[11px] text-slate-300">
+                                    {gameState.logs && gameState.logs.length > 0 ? (
+                                        gameState.logs.map((log, i) => (
+                                            <div key={i} className="border-b border-white/5 pb-1 last:border-0 leading-tight">
+                                                <span className="text-slate-500 mr-2 text-[9px]">[{i + 1}]</span>
+                                                {log}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-center text-slate-500 py-8">Belum ada catatan.</div>
+                                    )}
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -274,37 +427,8 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                     const p = gameState.players.find(p => p.seatIndex === targetSeatIndex);
 
-                    // Slot Positioning
-                    // Use 'i' as relative index (0 = Me, 1 = Right, etc.)
-                    const getSlotForPlayer = (relIdx: number): number => {
-                        if (relIdx === 0) return 0; // Main player always center bottom
-
-                        // Distribution patterns
-                        // For MAX_PLAYERS (6)
-                        const distributions: Record<number, number[]> = {
-                            6: [0, 4, 6, 5, 9, 1], // Bottom, Right, TopR, TopL, Left, BottomL
-                        };
-                        const pattern = distributions[6];
-                        return pattern[relIdx] ?? 0;
-                    };
-
-                    const slotIndex = getSlotForPlayer(i);
-
-                    // Define Slots (Same as before but simplified access)
-                    const slots = [
-                        { card: { bottom: '20%', left: '60%' }, name: { bottom: '10%', left: '60%' }, rotation: 0 },       // 0: Bottom R-Center (Main)
-                        { card: { bottom: '20%', left: '40%' }, name: { bottom: '10%', left: '40%' }, rotation: 0 },       // 1: Bottom L-Center
-                        { card: { bottom: '20%', left: '80%' }, name: { bottom: '10%', left: '80%' }, rotation: 0 },       // 2: Bottom Right
-                        { card: { bottom: '20%', left: '20%' }, name: { bottom: '10%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
-                        { card: { top: '50%', right: '1%' }, name: { top: '50%', right: '-8%' }, rotation: 270 },          // 4: Right Center
-                        { card: { top: '28%', left: '40%' }, name: { top: '10%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
-                        { card: { top: '28%', left: '60%' }, name: { top: '10%', left: '60%' }, rotation: 180 },           // 6: Top R-Center
-                        { card: { top: '28%', left: '20%' }, name: { top: '10%', left: '20%' }, rotation: 180 },           // 7: Top Left
-                        { card: { top: '28%', left: '80%' }, name: { top: '10%', left: '80%' }, rotation: 180 },           // 8: Top Right
-                        { card: { top: '50%', left: '13%' }, name: { top: '50%', left: '4%' }, rotation: 90 },             // 9: Left Center
-                    ];
-
-                    const slot = slots[slotIndex];
+                    // Use common helper
+                    const slot = getSlotPosition(targetSeatIndex);
                     let cardStyle: React.CSSProperties = {
                         ...slot.card,
                         transform: `translate(-50%, ${slot.card.top ? '-50%' : '0'})${slot.rotation !== 0 ? ` rotate(${slot.rotation}deg)` : ''}`
@@ -312,10 +436,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     let nameStyle: React.CSSProperties = { ...slot.name, transform: 'translate(-50%, 0)' };
 
                     // Center main player styling adjusted
-                    if (i === 0) {
-                        cardStyle = { ...slot.card, transform: 'translate(-50%, 0)', left: '50%' };
-                        nameStyle = { ...slot.name, transform: 'translate(-50%, 0)', left: '50%' };
-                    }
+
 
                     // --- EMPTY SLOT RENDERING ---
                     if (!p) {
@@ -353,7 +474,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                 `}>
                                     <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
-                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name} <span className="text-gray-400 text-[10px]">({p.hand.length})</span>
+                                            {isMe ? 'You' : (p.name === 'Computer (Bot)' ? 'Bot' : p.name)} <span className="text-xs md:text-sm text-grey truncate">({p.hand.length})</span>
                                         </div>
                                         {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
                                     </div>
@@ -372,6 +493,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                             return (
                                                 <div className={`flex space-x-2 ${cssClass}`}>
                                                     {p.faceDownCards.map((_, idx) => {
+                                                        // Animation check: manually hide if not dealt yet
+                                                        if (isDealing && (dealtCardsCount[p.seatIndex]?.faceDown ?? 0) <= idx) return null;
+
                                                         const isSelected = canSelectFaceDown && selectedFaceDownIndex === idx;
                                                         return (
                                                             <div key={`fd-${idx}`}
@@ -406,6 +530,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                         const FaceUpGroup = (cssClass: string) => (
                                             <div className={`flex space-x-2 ${cssClass}`}>
                                                 {p.faceUpCards.map((c, idx) => {
+                                                    // Animation check: manually hide if not dealt yet
+                                                    if (isDealing && (dealtCardsCount[p.seatIndex]?.faceUp ?? 0) <= idx) return null;
+
                                                     const isSelected = isMe && gameState.status === 'playing' && currentPlayer!.hand.length === 0 && selectedCardIndices.includes(idx);
                                                     return (
                                                         <div key={`fu-${idx}`}
@@ -434,8 +561,8 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                         if (isMe) {
                                             return (
                                                 <>
-                                                    {FaceUpGroup("z-40")}
-                                                    {FaceDownGroup("-mt-12 z-10")}
+                                                    {FaceDownGroup("z-10")}
+                                                    {FaceUpGroup("-mt-12 z-40")}
                                                 </>
                                             );
                                         } else {
@@ -455,49 +582,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
 
                 {/* LOGS MODAL */}
-                {showLogs && (
-                    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-white/10">
-                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                    <span>📜</span> Log Permainan
-                                </h3>
-                                <button
-                                    onClick={() => setShowLogs(false)}
-                                    className="text-slate-400 hover:text-white transition-colors"
-                                >
-                                    ✕
-                                </button>
-                            </div>
 
-                            {/* Content */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-2 font-mono text-sm text-slate-300">
-                                {gameState.logs && gameState.logs.length > 0 ? (
-                                    gameState.logs.map((log, i) => (
-                                        <div key={i} className="border-b border-white/5 pb-1 last:border-0">
-                                            <span className="text-slate-500 mr-2">[{i + 1}]</span>
-                                            {log}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center text-slate-500 py-8">Belum ada catatan permainan.</div>
-                                )}
-                                <div ref={messagesEndRef} />
-                            </div>
-
-                            {/* Footer */}
-                            <div className="p-4 border-t border-white/10 text-right">
-                                <button
-                                    onClick={() => setShowLogs(false)}
-                                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
-                                >
-                                    Tutup
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* LOBBY OVERLAY (If Waiting) */}
                 {gameState.status === 'waiting' && (
@@ -534,15 +619,15 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                 source = 'faceDown';
                             }
                             handleExecutePlay(source);
-                        }} className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-full font-bold shadow-lg animate-bounce">
-                            Mainkan {selectedCardIndices.length} Kartu
+                        }} className="bg-green-600 hover:bg-green-700 text-white backdrop-blur-md px-8 py-2 rounded-full text-sm font-bold shadow-lg animate-bounce">
+                            🔝 Mainkan {selectedCardIndices.length} Kartu
                         </button>
                     )}
 
                     {/* Take Pile */}
                     {gameState.status === 'playing' && isMyTurn && gameState.discardPile.length > 0 && (
-                        <button onClick={onTakePile} className="bg-red-800 hover:bg-red-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                            Ambil
+                        <button onClick={onTakePile} className="bg-red-800 hover:bg-red-700 text-white backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                            🫴🏻 Ambil
                         </button>
                     )}
 
@@ -555,7 +640,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                     {/* Sort Button */}
                     {currentPlayer.hand.length > 1 && (
-                        <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
+                        <button onClick={() => actions.sortHand(gameState.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white backdrop-blur-md px-8 py-2 rounded-full text-sm font-bold shadow-lg active:bg-green-500 transition-colors">
                             🔃 Urutkan
                         </button>
                     )}
@@ -572,6 +657,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                             hover:space-x-0 md:hover:space-x-1 transition-all duration-300 min-h-[100px]
                         `}>
                         {currentPlayer.hand.map((c, i) => {
+                            // Animation check for Hand
+                            if (isDealing && (dealtCardsCount[currentPlayer.seatIndex]?.hand ?? 0) <= i) return null;
+
                             const isSelected = gameState.status === 'playing' && selectedCardIndices.includes(i);
                             const preparingSelected = gameState.status === 'preparing' && selectedHandIndex === i;
                             return (

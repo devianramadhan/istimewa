@@ -43,7 +43,7 @@ export const Card: React.FC<CardProps> = ({ card, isHidden = false, onClick, cla
                 onClick={onClick}
                 className={`
                     ${sizeClasses} bg-slate-700 rounded-lg border-2 border-slate-500 shadow-md 
-                    flex items-center justify-center cursor-pointer hover:bg-slate-600 transition-transform transform hover:-translate-y-1 overflow-hidden
+                    flex items-center justify-center overflow-hidden
                     ${className}
                 `}
             >
@@ -63,7 +63,7 @@ export const Card: React.FC<CardProps> = ({ card, isHidden = false, onClick, cla
                 onClick={onClick}
                 className={`
                     ${sizeClasses} bg-gradient-to-br from-purple-100 to-purple-300 rounded-lg shadow-md border-2 border-purple-400 relative select-none
-                    flex flex-col items-center justify-center ${paddingSize} cursor-pointer hover:shadow-lg transition-transform transform hover:-translate-y-2 overflow-hidden
+                    flex flex-col items-center justify-center ${paddingSize} overflow-hidden
                     ${className}
                 `}
             >
@@ -79,7 +79,7 @@ export const Card: React.FC<CardProps> = ({ card, isHidden = false, onClick, cla
             onClick={onClick}
             className={`
                 ${sizeClasses} bg-white rounded-lg shadow-md border border-slate-300 relative select-none
-                flex flex-col items-center justify-between ${paddingSize} cursor-pointer hover:shadow-lg transition-transform transform hover:-translate-y-2 overflow-hidden
+                flex flex-col items-center justify-between ${paddingSize} overflow-hidden
                 ${className}
             `}
         >
