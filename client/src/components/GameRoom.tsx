@@ -633,7 +633,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
                     {/* Ready Button (Preparing) */}
                     {gameState.status === 'preparing' && !currentPlayer.isReady && (
-                        <button onClick={onSetReady} className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/10 px-8 py-2 rounded-full text-sm font-bold shadow-lg transition-all">
+                        <button onClick={onSetReady} className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/10 px-8 py-2 rounded-full text-sm font-bold shadow-lg transition-all animate-bounce">
                             ✅ Ready
                         </button>
                     )}
