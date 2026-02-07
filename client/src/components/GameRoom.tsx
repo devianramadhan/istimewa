@@ -42,6 +42,18 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     // Discard pile viewer
     const [showDiscardPile, setShowDiscardPile] = useState(false);
 
+    // Winner Animation State (Transient)
+    const [showCelebration, setShowCelebration] = useState(false);
+
+    // Effect to trigger celebration for 2 seconds when rank is assigned
+    React.useEffect(() => {
+        if (currentPlayer?.finishedRank) {
+            setShowCelebration(true);
+            const timer = setTimeout(() => setShowCelebration(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [currentPlayer?.finishedRank]);
+
     const handleCardClick = (index: number, source: 'hand' | 'faceUp') => {
         if (gameState.status !== 'playing' || !isMyTurn || !currentPlayer) return;
 
@@ -496,8 +508,8 @@ export const GameRoom: React.FC<GameRoomProps> = ({
 
 
             {/* --- GAME OVER OVERLAYS --- */}
-            {/* WINNER OVERLAY */}
-            {currentPlayer.finishedRank && (
+            {/* WINNER OVERLAY (Shows for 2s on win, OR permanently when game finishes) */}
+            {currentPlayer.finishedRank && (showCelebration || gameState.status === 'finished') && (
                 <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center pointer-events-none">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto" />
                     <div className="relative z-10 text-center animate-bounce-in pointer-events-none">
