@@ -57,6 +57,9 @@ export const GameRoom: React.FC<GameRoomProps> = ({
     // Winner Animation State (Transient)
     const [showCelebration, setShowCelebration] = useState(false);
 
+    // Logs Modal State
+    const [showLogs, setShowLogs] = useState(false);
+
     // Effect to trigger celebration for 2 seconds when rank is assigned
     React.useEffect(() => {
         if (currentPlayer?.finishedRank) {
@@ -203,13 +206,13 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         </div>
                     </div>
 
-                    {/* Game Log */}
-                    <div className="bg-black/20 backdrop-blur-sm p-2 rounded-lg border border-white/5 w-full h-32 overflow-y-auto text-[10px] md:text-xs text-slate-300 font-mono scrollbar-hide">
-                        {gameState.logs && gameState.logs.map((log, i) => (
-                            <div key={i} className="mb-1 border-b border-white/5 pb-0.5 last:border-0">{log}</div>
-                        ))}
-                        <div ref={messagesEndRef} />
-                    </div>
+                    {/* Log Button */}
+                    <button
+                        onClick={() => setShowLogs(true)}
+                        className="bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2 transition-colors"
+                    >
+                        <span>📜</span> Log Permainan
+                    </button>
                 </div>
             </div>
 
@@ -330,7 +333,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                                 `}>
                                     <div className="flex items-center justify-center gap-1">
                                         <div className="text-xs md:text-sm font-bold text-white truncate max-w-[80px] md:max-w-[120px]">
-                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name} <span className="text-gray-400 text-[10px]">({p.hand.length + p.faceDownCards.length})</span>
+                                            {p.name === 'Computer (Bot)' ? 'Bot' : p.name} <span className="text-gray-400 text-[10px]">({p.hand.length})</span>
                                         </div>
                                         {p.isReady && gameState.status === 'preparing' && <span className="text-[10px]">✅</span>}
                                     </div>
@@ -430,6 +433,51 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                     );
                 })}
 
+
+                {/* LOGS MODAL */}
+                {showLogs && (
+                    <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-4 border-b border-white/10">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <span>📜</span> Log Permainan
+                                </h3>
+                                <button
+                                    onClick={() => setShowLogs(false)}
+                                    className="text-slate-400 hover:text-white transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-2 font-mono text-sm text-slate-300">
+                                {gameState.logs && gameState.logs.length > 0 ? (
+                                    gameState.logs.map((log, i) => (
+                                        <div key={i} className="border-b border-white/5 pb-1 last:border-0">
+                                            <span className="text-slate-500 mr-2">[{i + 1}]</span>
+                                            {log}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center text-slate-500 py-8">Belum ada catatan permainan.</div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Footer */}
+                            <div className="p-4 border-t border-white/10 text-right">
+                                <button
+                                    onClick={() => setShowLogs(false)}
+                                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* LOBBY OVERLAY (If Waiting) */}
                 {gameState.status === 'waiting' && (
