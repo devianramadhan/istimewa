@@ -244,7 +244,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         { card: { bottom: '12%', left: '20%' }, name: { bottom: '0%', left: '20%' }, rotation: 0 },       // 3: Bottom Left
 
                         // Right column (1 slot) - 270°
-                        { card: { top: '50%', right: '2%' }, name: { top: '50%', right: '-5%' }, rotation: 270 },         // 4: Right Center
+                        { card: { top: '50%', right: '-3%' }, name: { top: '50%', right: '-8%' }, rotation: 270 },        // 4: Right Center
 
                         // Top row (4 slots) - 180°
                         { card: { top: '12%', left: '40%' }, name: { top: '0%', left: '40%' }, rotation: 180 },           // 5: Top L-Center
@@ -253,7 +253,7 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                         { card: { top: '12%', left: '80%' }, name: { top: '0%', left: '80%' }, rotation: 180 },           // 8: Top Right
 
                         // Left column (1 slot) - 90°
-                        { card: { top: '50%', left: '6%' }, name: { top: '50%', left: '-2%' }, rotation: 90 },            // 9: Left Center
+                        { card: { top: '50%', left: '15%' }, name: { top: '50%', left: '8%' }, rotation: 90 },            // 9: Left Center
                     ];
 
                     // Assign players to slots based on total count
