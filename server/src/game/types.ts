@@ -16,6 +16,7 @@ export interface Player {
     hasSwapped: boolean;
     isBot?: boolean;
     connected?: boolean;
+    finishedRank?: number; // 1st, 2nd, 3rd...
 }
 
 export type GameStatus = 'waiting' | 'preparing' | 'playing' | 'finished';

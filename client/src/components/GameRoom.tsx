@@ -509,6 +509,56 @@ export const GameRoom: React.FC<GameRoomProps> = ({
                 </div>
             </div>
 
+
+            {/* --- GAME OVER OVERLAYS --- */}
+            {/* WINNER OVERLAY */}
+            {currentPlayer.finishedRank && (
+                <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-fade-in pointer-events-auto" />
+                    <div className="relative z-10 text-center animate-bounce-in pointer-events-none">
+                        <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-4 drop-shadow-[0_0_15px_rgba(255,215,0,0.8)] px-4 pb-2">
+                            Selamat, Anda Menang!
+                        </h1>
+                        <p className="text-3xl text-white font-bold animate-pulse mt-4 drop-shadow-lg">
+                            Juara #{currentPlayer.finishedRank}
+                        </p>
+                        <div className="mt-8 text-8xl animate-spin-slow">🏆</div>
+
+                        {gameState.status !== 'finished' && (
+                            <div className="mt-8 text-xl text-yellow-200 animate-pulse">Menunggu pemain lain selesai...</div>
+                        )}
+
+                        {gameState.status === 'finished' && (
+                            <div className="flex gap-4 justify-center mt-12 pointer-events-auto">
+                                <button onClick={() => window.location.reload()} className="bg-white text-black px-8 py-3 rounded-full font-bold text-xl hover:scale-105 transition shadow-xl hover:shadow-2xl hover:bg-yellow-50">
+                                    Main Lagi
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* LOSER OVERLAY */}
+            {gameState.status === 'finished' && !currentPlayer.finishedRank && (
+                <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center pointer-events-none">
+                    <div className="absolute inset-0 bg-red-950/90 backdrop-blur-sm animate-fade-in pointer-events-auto" />
+                    <div className="relative z-10 text-center animate-shake pointer-events-none">
+                        <h1 className="text-5xl md:text-7xl font-black text-rose-500 mb-6 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)] px-4 rotate-[-5deg] leading-tight flex flex-col gap-2">
+                            <span>Yha Kalah!</span>
+                            <span>Cupu Bet Dah Luuu!! 🤭</span>
+                        </h1>
+                        <div className="text-9xl grayscale opacity-80 mt-8 animate-pulse">🤡</div>
+
+                        <div className="flex gap-4 justify-center mt-12 pointer-events-auto">
+                            <button onClick={() => window.location.reload()} className="bg-rose-600 text-white px-8 py-3 rounded-full font-bold text-xl hover:scale-105 transition shadow-xl hover:bg-rose-500">
+                                Coba Lagi Deh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Discard Modal (Keep existing) */}
             {showDiscardPile && (
                 <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-8" onClick={() => setShowDiscardPile(false)}>

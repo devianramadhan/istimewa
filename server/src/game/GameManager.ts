@@ -603,14 +603,31 @@ export class GameManager {
             }
         }
 
-        // Check Win Condition
+        // Check Win/Finish Condition
         if (currentPlayer.hand.length === 0 &&
             currentPlayer.faceUpCards.length === 0 &&
             currentPlayer.faceDownCards.length === 0) {
-            game.status = 'finished';
-            game.winner = currentPlayer.id;
-            game.message = `Winner: ${currentPlayer.name}!`;
-            return true;
+
+            // Check if already finished (safety)
+            if (!currentPlayer.finishedRank) {
+                const finishedCount = game.players.filter(p => p.finishedRank).length;
+                currentPlayer.finishedRank = finishedCount + 1;
+                game.message = `${currentPlayer.name} finished #${currentPlayer.finishedRank}!`;
+
+                // If First Winner, set game.winner (for record keeping)
+                if (currentPlayer.finishedRank === 1) {
+                    game.winner = currentPlayer.id;
+                }
+            }
+
+            // Check if Game Over (Only 1 Active Left)
+            const activePlayers = game.players.filter(p => !p.finishedRank);
+            if (activePlayers.length <= 1) {
+                game.status = 'finished';
+                // Trigger final update
+                return true;
+            }
+            // Continue game...
         }
 
         // Advance turn
@@ -700,10 +717,16 @@ export class GameManager {
     }
 
     private advanceTurn(game: GameState) {
-        // Advance turn
-        let nextIndex = game.currentPlayerIndex + game.direction;
-        if (nextIndex >= game.players.length) nextIndex = 0;
-        if (nextIndex < 0) nextIndex = game.players.length - 1;
+        // Advance turn finding next active player
+        let nextIndex = game.currentPlayerIndex;
+        let attempts = 0;
+        do {
+            nextIndex += game.direction;
+            if (nextIndex >= game.players.length) nextIndex = 0;
+            if (nextIndex < 0) nextIndex = game.players.length - 1;
+            attempts++;
+        } while (game.players[nextIndex].finishedRank && attempts < game.players.length * 2);
+
         game.currentPlayerIndex = nextIndex;
 
         // Check if next player is Bot
